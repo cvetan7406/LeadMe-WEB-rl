@@ -78,6 +78,52 @@ export const useLeadsRows = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState([]);
   const [rawData, setRawData] = useState([]);
+  const [selectingAll, setSelectingAll] = useState(false);
+
+  // Function to fetch all contact IDs
+  const fetchAllContactIds = async () => {
+    try {
+      let query = supabase
+        .from('uploaded_leads')
+        .select('id');
+      
+      // Apply search filter if exists
+      if (searchQuery) {
+        query = query.or(
+          `region.ilike.%${searchQuery}%,` +
+          `sales_representative.ilike.%${searchQuery}%,` +
+          `sales_rep_phone.ilike.%${searchQuery}%,` +
+          `sales_rep_email.ilike.%${searchQuery}%,` +
+          `pharmacy_name.ilike.%${searchQuery}%,` +
+          `pharmacy_phone.ilike.%${searchQuery}%,` +
+          `pharmacist_name.ilike.%${searchQuery}%,` +
+          `district.ilike.%${searchQuery}%,` +
+          `locality.ilike.%${searchQuery}%`
+        );
+      }
+
+      const { data, error } = await query;
+      
+      if (error) throw error;
+      return data.map(row => row.id);
+    } catch (error) {
+      console.error('Error fetching all contact IDs:', error);
+      return [];
+    }
+  };
+
+  // Function to select all contacts
+  const selectAllContacts = async () => {
+    setSelectingAll(true);
+    try {
+      const allIds = await fetchAllContactIds();
+      setSelectedIds(allIds);
+    } catch (error) {
+      console.error('Error selecting all contacts:', error);
+    } finally {
+      setSelectingAll(false);
+    }
+  };
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -161,7 +207,9 @@ export const useLeadsRows = () => {
     selectedIds,
     toggleRowSelection,
     selectAllRows,
-    areAllRowsSelected
+    areAllRowsSelected,
+    selectAllContacts,
+    selectingAll
   };
 };
 

@@ -10,6 +10,7 @@ import Footer from "../../examples/Footer";
 import Table from "../../examples/Tables/Table";
 import { columns, useLeadsRows } from "./components/manageTableLeads"; // Import the leads data and columns
 import EditLeadModal from './components/EditLeadModal'; // Import the modal component
+import AddLeadModal from './components/AddLeadModal'; // Import the add lead modal
 import SearchIcon from '@mui/icons-material/Search';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
@@ -28,18 +29,22 @@ function ManageContacts() {
     setPagination,
     searchQuery,
     setSearchQuery,
-    refreshData
+    refreshData,
+    selectAllContacts,
+    selectingAll,
+    selectedIds,
+    toggleRowSelection
   } = useLeadsRows(); // Use the custom hook to get leads data
   
   const [openModal, setOpenModal] = useState(false);
   const [selectedLead, setSelectedLead] = useState(null);
   const [searchInput, setSearchInput] = useState('');
-  const [selectedRows, setSelectedRows] = useState([]);
   const [bulkActionAnchor, setBulkActionAnchor] = useState(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [bulkEditOpen, setBulkEditOpen] = useState(false);
   const [bulkEditField, setBulkEditField] = useState('');
   const [bulkEditValue, setBulkEditValue] = useState('');
+  const [addLeadOpen, setAddLeadOpen] = useState(false);
 
   // Define handlers for edit and delete actions
   const handleEdit = (lead) => {
@@ -70,10 +75,6 @@ function ManageContacts() {
   };
 
   // Bulk action handlers
-  const handleBulkSelect = (selectedIds) => {
-    setSelectedRows(selectedIds);
-  };
-
   const handleBulkActionClick = (event) => {
     setBulkActionAnchor(event.currentTarget);
   };
@@ -93,20 +94,19 @@ function ManageContacts() {
   };
 
   const handleBulkEditSubmit = async () => {
-    if (!bulkEditField || !selectedRows.length) return;
+    if (!bulkEditField || !selectedIds.length) return;
     
     try {
       const { error } = await supabase
         .from('uploaded_leads')
         .update({ [bulkEditField]: bulkEditValue })
-        .in('id', selectedRows);
+        .in('id', selectedIds);
       
       if (error) throw error;
       
       setBulkEditOpen(false);
       setBulkEditField('');
       setBulkEditValue('');
-      setSelectedRows([]);
       refreshData();
     } catch (error) {
       console.error('Error updating leads:', error);
@@ -115,18 +115,17 @@ function ManageContacts() {
   };
 
   const handleBulkDeleteConfirm = async () => {
-    if (!selectedRows.length) return;
+    if (!selectedIds.length) return;
     
     try {
       const { error } = await supabase
         .from('uploaded_leads')
         .delete()
-        .in('id', selectedRows);
+        .in('id', selectedIds);
       
       if (error) throw error;
       
       setConfirmDeleteOpen(false);
-      setSelectedRows([]);
       refreshData();
     } catch (error) {
       console.error('Error deleting leads:', error);
@@ -183,15 +182,32 @@ function ManageContacts() {
                   </VuiBox>
                 </VuiBox>
                 <VuiBox display="flex" alignItems="center" gap={2}>
-                  {selectedRows.length > 0 && (
+                  <VuiButton
+                    variant="contained"
+                    color="success"
+                    size="small"
+                    onClick={() => setAddLeadOpen(true)}
+                  >
+                    Add Lead
+                  </VuiButton>
+                  <VuiButton
+                    variant="contained"
+                    color="info"
+                    size="small"
+                    onClick={selectAllContacts}
+                    disabled={selectingAll}
+                  >
+                    {selectingAll ? 'Selecting All...' : `Select All (${totalCount})`}
+                  </VuiButton>
+                  {selectedIds.length > 0 && (
                     <VuiButton
                       variant="contained"
                       color="info"
                       size="small"
                       onClick={handleBulkActionClick}
-                      startIcon={selectedRows.length > 0 ? <EditIcon /> : null}
+                      startIcon={selectedIds.length > 0 ? <EditIcon /> : null}
                     >
-                      Bulk Actions ({selectedRows.length})
+                      Bulk Actions ({selectedIds.length})
                     </VuiButton>
                   )}
                   <VuiInput
@@ -289,7 +305,7 @@ function ManageContacts() {
                 ) : (
                   <>
                     <VuiBox mb={2} display="flex" justifyContent="flex-end">
-                      {selectedRows.length > 0 && (
+                      {selectedIds.length > 0 && (
                         <VuiButton
                           variant="contained"
                           color="info"
@@ -297,7 +313,7 @@ function ManageContacts() {
                           onClick={handleBulkActionClick}
                           startIcon={<EditIcon />}
                         >
-                          Bulk Actions ({selectedRows.length})
+                          Bulk Actions ({selectedIds.length})
                         </VuiButton>
                       )}
                     </VuiBox>
@@ -306,8 +322,8 @@ function ManageContacts() {
                       rows={rows}
                       onEdit={handleEdit}
                       onDelete={handleDelete}
-                      onBulkSelect={handleBulkSelect}
-                      selectedRows={selectedRows}
+                      onBulkSelect={toggleRowSelection}
+                      selectedRows={selectedIds}
                     />
                   </>
                 )}
@@ -375,6 +391,12 @@ function ManageContacts() {
         />
       )}
 
+      <AddLeadModal
+        open={addLeadOpen}
+        handleClose={() => setAddLeadOpen(false)}
+        onLeadAdded={refreshData}
+      />
+
       {/* Bulk Actions Menu */}
       <Menu
         anchorEl={bulkActionAnchor}
@@ -393,13 +415,13 @@ function ManageContacts() {
         <MenuItem onClick={handleBulkEditClick} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <EditIcon fontSize="small" color="warning" />
           <VuiTypography variant="button" color="text">
-            Edit Selected ({selectedRows.length})
+            Edit Selected ({selectedIds.length})
           </VuiTypography>
         </MenuItem>
         <MenuItem onClick={handleBulkDeleteClick} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <DeleteIcon fontSize="small" color="error" />
           <VuiTypography variant="button" color="text">
-            Delete Selected ({selectedRows.length})
+            Delete Selected ({selectedIds.length})
           </VuiTypography>
         </MenuItem>
       </Menu>
@@ -418,7 +440,7 @@ function ManageContacts() {
       >
         <DialogTitle>
           <VuiTypography variant="h6" color="white">
-            Edit {selectedRows.length} Selected Contacts
+            Edit {selectedIds.length} Selected Contacts
           </VuiTypography>
         </DialogTitle>
         <DialogContent>
@@ -483,7 +505,7 @@ function ManageContacts() {
             onClick={handleBulkEditSubmit}
             disabled={!bulkEditField || !bulkEditValue}
           >
-            Update {selectedRows.length} Contacts
+            Update {selectedIds.length} Contacts
           </VuiButton>
         </DialogActions>
       </Dialog>
@@ -506,7 +528,7 @@ function ManageContacts() {
         </DialogTitle>
         <DialogContent>
           <VuiTypography variant="button" color="text">
-            Are you sure you want to delete {selectedRows.length} selected contacts? This action cannot be undone.
+            Are you sure you want to delete {selectedIds.length} selected contacts? This action cannot be undone.
           </VuiTypography>
         </DialogContent>
         <DialogActions sx={{ padding: '16px 24px' }}>
@@ -522,7 +544,7 @@ function ManageContacts() {
             variant="contained"
             onClick={handleBulkDeleteConfirm}
           >
-            Delete {selectedRows.length} Contacts
+            Delete {selectedIds.length} Contacts
           </VuiButton>
         </DialogActions>
       </Dialog>
