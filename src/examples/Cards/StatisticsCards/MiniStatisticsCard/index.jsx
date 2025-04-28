@@ -33,7 +33,15 @@ function MiniStatisticsCard({ bgColor, title, count, percentage, icon, direction
   const { info } = colors;
 
   return (
-    <Card sx={{ padding: "17px" }}>
+    <Card sx={{
+      padding: "17px",
+      // Set minimum height of 130px for laptops and larger devices (md and up)
+      // Keep height dynamic for mobile devices (xs and sm)
+      minHeight: { xs: 'auto', md: '130px' },
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center'
+    }}>
       <VuiBox>
         <VuiBox>
           <Grid container alignItems="center">
@@ -62,12 +70,33 @@ function MiniStatisticsCard({ bgColor, title, count, percentage, icon, direction
                   opacity={bgColor === "white" ? 1 : 0.7}
                   textTransform="capitalize"
                   fontWeight={title.fontWeight}
+                  sx={{
+                    fontSize: { xs: '0.75rem', sm: '0.8rem', md: '0.85rem' },
+                    lineHeight: { xs: 1.2, md: 1.4 }
+                  }}
                 >
                   {title.text}
                 </VuiTypography>
-                <VuiTypography variant="subtitle1" fontWeight="bold" color="white">
+                <VuiTypography
+                  variant="subtitle1"
+                  fontWeight="bold"
+                  color="white"
+                  sx={{
+                    fontSize: { xs: '1rem', sm: '1.1rem', md: '1.2rem', lg: '1.3rem' },
+                    lineHeight: { xs: 1.3, md: 1.5 },
+                    wordBreak: 'break-word'
+                  }}
+                >
                   {count}{" "}
-                  <VuiTypography variant="button" color={percentage.color} fontWeight="bold">
+                  <VuiTypography
+                    variant="button"
+                    color={percentage.color}
+                    fontWeight="bold"
+                    sx={{
+                      fontSize: { xs: '0.8rem', sm: '0.85rem', md: '0.9rem' },
+                      lineHeight: { xs: 1.2, md: 1.4 }
+                    }}
+                  >
                     {percentage.text}
                   </VuiTypography>
                 </VuiTypography>

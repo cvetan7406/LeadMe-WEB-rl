@@ -70,6 +70,7 @@ function CreateCampaign() {
     name: '',
     description: '',
     status: 'draft',
+    // Initialize with empty strings - will be formatted correctly when set
     start_time: '',
     end_time: '',
     script_id: '',
@@ -350,6 +351,7 @@ function CreateCampaign() {
         name: '',
         description: '',
         status: 'draft',
+        // Initialize with empty strings - will be formatted correctly when set
         start_time: '',
         end_time: '',
         script_id: '',
@@ -523,7 +525,7 @@ function CreateCampaign() {
         
       case 2:
         return (
-          <Stack spacing={3}>
+          <Stack spacing={3} sx={{ width: { xs: '100%', md: '100%', lg: '100%' } }}>
             <TextField
               select
               label="Script"
@@ -562,7 +564,9 @@ function CreateCampaign() {
               name="start_time"
               value={campaignData.start_time}
               onChange={(e) => {
-                const formattedDate = e.target.value;
+                // Ensure the date is in the correct format for datetime-local: yyyy-MM-ddThh:mm
+                const date = new Date(e.target.value);
+                const formattedDate = date.toISOString().slice(0, 16);
                 handleChange({
                   target: {
                     name: 'start_time',
@@ -584,7 +588,9 @@ function CreateCampaign() {
               name="end_time"
               value={campaignData.end_time}
               onChange={(e) => {
-                const formattedDate = e.target.value;
+                // Ensure the date is in the correct format for datetime-local: yyyy-MM-ddThh:mm
+                const date = new Date(e.target.value);
+                const formattedDate = date.toISOString().slice(0, 16);
                 handleChange({
                   target: {
                     name: 'end_time',
@@ -643,7 +649,7 @@ function CreateCampaign() {
             </VuiTypography>
             
             <Grid container spacing={2}>
-              <Grid item xs={6}>
+              <Grid sx={{ width: '50%' }}>
                 <TextField
                   label="Call Time Start"
                   type="time"
@@ -655,7 +661,7 @@ function CreateCampaign() {
                   InputLabelProps={{ shrink: true }}
                 />
               </Grid>
-              <Grid item xs={6}>
+              <Grid sx={{ width: '50%' }}>
                 <TextField
                   label="Call Time End"
                   type="time"
@@ -889,9 +895,9 @@ function CreateCampaign() {
       <DashboardNavbar />
       <VuiBox p={3}>
         <Grid container spacing={2} justifyContent="center">
-          <Grid item xs={12} lg={10}>
+          <Grid item xs={12} lg={12}>
             <Card sx={{ borderRadius: "20px" }}>
-              <VuiBox p={3}>
+              <VuiBox p={3} sx={{ maxWidth: { xs: '100%', md: '90%', lg: '85%' }, margin: '0 auto' }}>
                 <VuiTypography variant="h5" color="white" fontWeight="bold" mb={2}>
                   Create New Campaign
                 </VuiTypography>

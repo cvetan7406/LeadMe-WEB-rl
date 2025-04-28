@@ -101,14 +101,16 @@ function Configurator() {
     return () => window.removeEventListener("resize", handleDisabled);
   }, []);
 
+  // Set default filters only once when component mounts
   useEffect(() => {
-    // Set default filters to a wide date range
-    updateFilters({
-      startDate: '1970-01-01',
-      endDate: new Date().toISOString().split('T')[0],
-      selectedCampaign: '',
-    });
-  }, []);
+    // Only set default filters if they're not already set
+    if (!filters.selectedCampaign) {
+      // Default to no specific campaign selected
+      updateFilters({
+        selectedCampaign: '',
+      });
+    }
+  }, []); // Empty dependency array to run only once on mount
 
   const handleCloseConfigurator = () => setOpenConfigurator(dispatch, false);
   const handleTransparentSidenav = () => setTransparentSidenav(dispatch, true);
@@ -116,23 +118,18 @@ function Configurator() {
   const handleFixedNavbar = () => setFixedNavbar(dispatch, !fixedNavbar);
 
   const handleFilterChange = () => {
-    const startDate = document.getElementById('startDate').value;
-    const endDate = document.getElementById('endDate').value;
     const selectedCampaign = document.getElementById('campaignSelect').value;
 
-    if (selectedCampaign) {
-      updateFilters({
-        startDate: '',
-        endDate: '',
-        selectedCampaign,
-      });
-    } else {
-      updateFilters({
-        startDate,
-        endDate,
-        selectedCampaign: '',
-      });
+    // Create a new filter object based on selection
+    const newFilters = {
+      selectedCampaign,
+    };
+
+    // Only update if filter has actually changed
+    if (newFilters.selectedCampaign !== filters.selectedCampaign) {
+      updateFilters(newFilters);
     }
+    
     handleCloseConfigurator();
   };
 
@@ -162,10 +159,10 @@ function Configurator() {
       >
         <VuiBox>
           <VuiTypography color="white" variant="h5" fontWeight="bold">
-            Data Selector
+            Campaign Selector
           </VuiTypography>
           <VuiTypography variant="body2" color="white" fontWeight="bold">
-            Slect dashboard data 
+            Select campaign to view data
           </VuiTypography>
         </VuiBox>
 
@@ -187,67 +184,24 @@ function Configurator() {
       <VuiBox pt={1.25} pb={3} px={3}>
         <VuiBox mb={3}>
           <VuiTypography variant="h6" color="white">
-            Time Range Filter
+            Select Campaign
           </VuiTypography>
           
           <VuiBox mt={2} display="flex" flexDirection="column" gap={2}>
             <VuiBox>
               <VuiTypography variant="button" color="text" fontWeight="regular" mb={1} display="block">
-                Start Date/Time
-              </VuiTypography>
-              <input
-                id="startDate"
-                type="datetime-local"
-                value={filters.startDate}
-                onChange={(e) => updateFilters({ startDate: e.target.value })}
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  backgroundColor: 'transparent',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '8px',
-                  color: 'white'
-                }}
-              />
-            </VuiBox>
-            
-            <VuiBox>
-              <VuiTypography variant="button" color="text" fontWeight="regular" mb={1} display="block">
-                End Date/Time
-              </VuiTypography>
-              <input
-                id="endDate"
-                type="datetime-local"
-                value={filters.endDate}
-                onChange={(e) => updateFilters({ endDate: e.target.value })}
-                style={{
-                  width: '100%',
-                  padding: '8px',
-                  backgroundColor: 'transparent',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  borderRadius: '8px',
-                  color: 'white'
-                }}
-              />
-            </VuiBox>
-          </VuiBox>
-        </VuiBox>
-
-        <VuiBox mb={3}>
-          <VuiTypography variant="h6" color="white">
-            Campaign Filter
-          </VuiTypography>
-          
-          <VuiBox mt={2} display="flex" flexDirection="column" gap={2}>
-            <VuiBox>
-              <VuiTypography variant="button" color="text" fontWeight="regular" mb={1} display="block">
-                Select Campaign
+                Choose a campaign to view its data
               </VuiTypography>
               <VuiBox
                 component="select"
                 id="campaignSelect"
                 value={filters.selectedCampaign}
-                onChange={(e) => updateFilters({ selectedCampaign: e.target.value })}
+                onChange={(e) => {
+                  // Only update if the value has actually changed
+                  if (e.target.value !== filters.selectedCampaign) {
+                    updateFilters({ selectedCampaign: e.target.value });
+                  }
+                }}
                 disabled={loading}
                 sx={{
                   width: '100%',
