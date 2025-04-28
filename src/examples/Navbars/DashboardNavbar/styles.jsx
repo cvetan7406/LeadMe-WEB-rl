@@ -18,7 +18,7 @@
 
 function navbar(theme, ownerState) {
   const { palette, boxShadows, functions, transitions, breakpoints, borders } = theme;
-  const { transparentNavbar, absolute, light } = ownerState;
+  const { transparentNavbar, absolute, light, miniSidenav } = ownerState;
 
   const { dark, white, text, transparent, gradients, borderCol } = palette;
   const { navbarBoxShadow } = boxShadows;
@@ -26,45 +26,32 @@ function navbar(theme, ownerState) {
   const { borderRadius } = borders;
 
   return {
-    boxShadow: transparentNavbar || absolute ? "none" : navbarBoxShadow,
-    backdropFilter: transparentNavbar || absolute ? "none" : `blur(${pxToRem(42)})`,
-    backgroundColor: `${transparent.main} !important`,
-    backgroundImage:
-      transparentNavbar || absolute
-        ? `none`
-        : `${linearGradient(
-            gradients.navbar.main,
-            gradients.navbar.state,
-            gradients.navbar.deg
-          )} !importants`,
+    boxShadow: navbarBoxShadow,
+    backdropFilter: `blur(${pxToRem(42)})`,
+    backgroundColor: transparentNavbar ? `${transparent.main} !important` : `${dark.main} !important`,
+    backgroundImage: transparentNavbar
+      ? 'none'
+      : `${linearGradient(
+          gradients.navbar.main,
+          gradients.navbar.state,
+          gradients.navbar.deg
+        )} !important`,
 
-    color: () => {
-      let color;
-
-      if (light) {
-        color = white.main;
-      } else if (transparentNavbar) {
-        color = text.main;
-      } else {
-        color = dark.main;
-      }
-      color = white.main;
-      return color;
-    },
-    top: absolute ? 0 : pxToRem(12),
+    color: white.main,
+    top: 0,
     minHeight: pxToRem(75),
     display: "grid",
     alignItems: "center",
+    zIndex: 900,
+    position: "sticky",
+    width: "100%",
+    padding: 0,
 
     borderRadius: borderRadius.xl,
     borderColor:
       transparentNavbar || absolute
         ? `${transparent.main} !important`
         : `${borderCol.navbar} !important`,
-    paddingTop: pxToRem(8),
-    paddingBottom: pxToRem(8),
-    paddingRight: absolute ? pxToRem(8) : 0,
-    paddingLeft: absolute ? pxToRem(16) : 0,
 
     "& > *": {
       transition: transitions.create("all", {
@@ -77,35 +64,33 @@ function navbar(theme, ownerState) {
       display: "flex",
       justifyContent: "space-between",
       alignItems: "center",
+      width: "100%",
+      padding: `${pxToRem(4)} ${pxToRem(24)}`,
 
       [breakpoints.up("sm")]: {
         minHeight: "auto",
-        padding: `${pxToRem(4)} ${pxToRem(16)}`,
       },
     },
   };
 }
 
 const navbarContainer = ({ breakpoints }) => ({
-  flexDirection: "column",
-  alignItems: "flex-start",
-  justifyContent: "space-between",
-  pt: 0.5,
-  pb: 0.5,
-
-  [breakpoints.up("md")]: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingTop: "0",
-    paddingBottom: "0",
-  },
-});
-
-const navbarRow = ({ breakpoints, palette: { white } }, { isMini }) => ({
   display: "flex",
+  flexDirection: "row",
   alignItems: "center",
   justifyContent: "space-between",
   width: "100%",
+  height: "100%",
+  padding: 0,
+});
+
+const navbarRow = ({ breakpoints, functions: { pxToRem }, palette: { white } }, { isMini, isRight }) => ({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: isRight ? "flex-end" : "flex-start",
+  width: isRight ? "auto" : "100%",
+  position: "relative",
+  gap: pxToRem(16),
   "&.MuiBox-root": {
     "& nav": {
       "& ol": {

@@ -562,13 +562,11 @@ function CreateCampaign() {
               name="start_time"
               value={campaignData.start_time}
               onChange={(e) => {
-                // Convert to UTC+3
-                const date = new Date(e.target.value);
-                const utcPlus3 = new Date(date.getTime() - (date.getTimezoneOffset() + 180) * 60000);
+                const formattedDate = e.target.value;
                 handleChange({
                   target: {
                     name: 'start_time',
-                    value: utcPlus3.toISOString().slice(0, 16)
+                    value: formattedDate
                   }
                 });
               }}
@@ -586,13 +584,11 @@ function CreateCampaign() {
               name="end_time"
               value={campaignData.end_time}
               onChange={(e) => {
-                // Convert to UTC+3
-                const date = new Date(e.target.value);
-                const utcPlus3 = new Date(date.getTime() - (date.getTimezoneOffset() + 180) * 60000);
+                const formattedDate = e.target.value;
                 handleChange({
                   target: {
                     name: 'end_time',
-                    value: utcPlus3.toISOString().slice(0, 16)
+                    value: formattedDate
                   }
                 });
               }}

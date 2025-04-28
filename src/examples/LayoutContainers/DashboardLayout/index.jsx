@@ -44,13 +44,33 @@ function DashboardLayout({ children }) {
       sx={({ breakpoints, transitions, functions: { pxToRem } }) => ({
         p: 3,
         position: "relative",
-
-        [breakpoints.up("xxl")]: {
-          marginLeft: miniSidenav ? pxToRem(120) : pxToRem(274),
-          transition: transitions.create(["margin-left", "margin-right"], {
+        
+        [breakpoints.up("xs")]: {
+          marginLeft: miniSidenav ? pxToRem(80) : "100%",
+          width: miniSidenav ? `calc(100% - ${pxToRem(80)})` : "100%",
+          transition: transitions.create(["margin-left", "width"], {
             easing: transitions.easing.easeInOut,
             duration: transitions.duration.standard,
           }),
+        },
+        
+        [breakpoints.up("sm")]: {
+          marginLeft: miniSidenav ? pxToRem(96) : pxToRem(250),
+          width: miniSidenav ? `calc(100% - ${pxToRem(96)})` : `calc(100% - ${pxToRem(250)})`,
+          transition: transitions.create(["margin-left", "width"], {
+            easing: transitions.easing.easeInOut,
+            duration: transitions.duration.standard,
+          }),
+        },
+        
+        [breakpoints.up("md")]: {
+          marginLeft: miniSidenav ? pxToRem(96) : pxToRem(250),
+          width: miniSidenav ? `calc(100% - ${pxToRem(96)})` : `calc(100% - ${pxToRem(250)})`,
+        },
+        
+        [breakpoints.up("xl")]: {
+          marginLeft: miniSidenav ? pxToRem(96) : pxToRem(250),
+          width: miniSidenav ? `calc(100% - ${pxToRem(96)})` : `calc(100% - ${pxToRem(250)})`,
         },
       })}
     >

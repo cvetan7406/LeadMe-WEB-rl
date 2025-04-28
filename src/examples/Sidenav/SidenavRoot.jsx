@@ -32,84 +32,73 @@ export default styled(Drawer)(({ theme, ownerState }) => {
 
   // styles for the sidenav when miniSidenav={false}
   const drawerOpenStyles = () => ({
-    transform: "translateX(0)",
-    transition: transitions.create("transform", {
-      easing: transitions.easing.sharp,
-      duration: transitions.duration.shorter,
-    }),
-    width: "100%",
     position: "fixed",
     height: "100vh",
     top: 0,
     left: 0,
-    zIndex: 1200,
+    zIndex: 1000,
+    overflowX: "hidden",
+    transition: transitions.create(["width", "transform"], {
+      easing: transitions.easing.sharp,
+      duration: transitions.duration.standard,
+    }),
 
-    // Improve mobile responsiveness
     [breakpoints.up("xs")]: {
       width: "100%",
+      transform: "translateX(0)",
     },
 
     [breakpoints.up("sm")]: {
       width: sidebarWidth,
+      transform: "translateX(0)",
     },
 
     [breakpoints.up("md")]: {
       width: sidebarWidth,
+      transform: "translateX(0)",
     },
 
     [breakpoints.up("xl")]: {
-      backgroundColor: transparentSidenav ? transparent.main : gradients.sidenav.main,
-      boxShadow: transparentSidenav ? "none" : xxl,
-      marginBottom: transparentSidenav ? 0 : "inherit",
-      left: "0",
       width: sidebarWidth,
       transform: "translateX(0)",
-      transition: transitions.create(["width", "background-color"], {
-        easing: transitions.easing.sharp,
-        duration: transitions.duration.enteringScreen,
-      }),
+      backgroundColor: transparentSidenav ? transparent.main : gradients.sidenav.main,
+      boxShadow: transparentSidenav ? "none" : xxl,
     },
   });
 
   // styles for the sidenav when miniSidenav={true}
   const drawerCloseStyles = () => ({
-    transform: `translateX(${pxToRem(-320)})`,
-    transition: transitions.create("transform", {
-      easing: transitions.easing.sharp,
-      duration: transitions.duration.shorter,
-    }),
-    width: sidebarWidth,
     position: "fixed",
     height: "100vh",
     top: 0,
     left: 0,
-    zIndex: 1200,
+    zIndex: 1000,
+    overflowX: "hidden",
+    transition: transitions.create(["width", "transform"], {
+      easing: transitions.easing.sharp,
+      duration: transitions.duration.standard,
+    }),
 
-    // Improved mobile responsiveness for mini sidenav
     [breakpoints.up("xs")]: {
-      width: "80px",
+      width: pxToRem(80),
+      transform: "translateX(0)",
     },
 
     [breakpoints.up("sm")]: {
       width: pxToRem(96),
+      transform: "translateX(0)",
     },
 
     [breakpoints.up("md")]: {
       width: pxToRem(96),
+      transform: "translateX(0)",
     },
 
     [breakpoints.up("xl")]: {
+      width: pxToRem(96),
+      transform: "translateX(0)",
       backgroundColor: transparentSidenav ? transparent.main : gradients.sidenav.main,
       boxShadow: transparentSidenav ? "none" : xxl,
-      marginBottom: transparentSidenav ? 0 : "inherit",
-      left: "0",
-      width: pxToRem(96),
-      overflowX: "hidden",
-      transform: "translateX(0)",
-      transition: transitions.create(["width", "background-color"], {
-        easing: transitions.easing.sharp,
-        duration: transitions.duration.shorter,
-      }),
     },
   });
 
@@ -139,6 +128,26 @@ export default styled(Drawer)(({ theme, ownerState }) => {
       "&::-webkit-scrollbar-thumb": {
         backgroundColor: "rgba(255, 255, 255, 0.3)",
         borderRadius: "3px",
+      },
+      // Add backdrop for mobile
+      "&::before": {
+        content: '""',
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        background: "rgba(0,0,0,0.5)",
+        zIndex: -1,
+        opacity: miniSidenav ? 0 : 1,
+        visibility: miniSidenav ? "hidden" : "visible",
+        transition: transitions.create(["opacity", "visibility"], {
+          easing: transitions.easing.sharp,
+          duration: transitions.duration.standard,
+        }),
+        [breakpoints.up("sm")]: {
+          display: "none",
+        },
       },
     },
   };

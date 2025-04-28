@@ -220,7 +220,20 @@ function Dashboard() {
   return (
     <DashboardLayout>
       <DashboardNavbar />
-      <VuiBox py={2} px={2} width="100%">
+      <VuiBox
+        py={3}
+        px={2}
+        width="100%"
+        sx={{
+          maxWidth: "100%",
+          margin: "0 auto",
+          position: "relative",
+          "& > *": {
+            position: "relative",
+            zIndex: 1
+          }
+        }}
+      >
         <VuiBox mb={3}>
           <WelcomeMark />
         </VuiBox>

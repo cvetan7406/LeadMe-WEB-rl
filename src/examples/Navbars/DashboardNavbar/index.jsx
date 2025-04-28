@@ -84,20 +84,15 @@ function DashboardNavbar({ absolute, light, isMini }) {
   const { notifications, removeNotification } = useNotifications();
 
   useEffect(() => {
-    // Setting the navbar type
-    if (fixedNavbar) {
-      setNavbarType("sticky");
-    } else {
-      setNavbarType("static");
-    }
+    setNavbarType("sticky");
 
     // A function that sets the transparent state of the navbar.
     function handleTransparentNavbar() {
-      setTransparentNavbar(dispatch, (fixedNavbar && window.scrollY === 0) || !fixedNavbar);
+      setTransparentNavbar(dispatch, window.scrollY === 0);
     }
 
-    /** 
-     The event listener that's calling the handleTransparentNavbar function when 
+    /**
+     The event listener that's calling the handleTransparentNavbar function when
      scrolling the window.
     */
     window.addEventListener("scroll", handleTransparentNavbar);
@@ -107,7 +102,7 @@ function DashboardNavbar({ absolute, light, isMini }) {
 
     // Remove event listener on cleanup
     return () => window.removeEventListener("scroll", handleTransparentNavbar);
-  }, [dispatch, fixedNavbar]);
+  }, [dispatch]);
 
   // For desktop: Handle mini sidenav toggle
   // For mobile: Use the global drawer toggle function
@@ -185,12 +180,13 @@ function DashboardNavbar({ absolute, light, isMini }) {
 
   return (
     <AppBar
-      position={absolute ? "absolute" : navbarType}
+      position="sticky"
       color="inherit"
-      sx={(theme) => navbar(theme, { transparentNavbar, absolute, light })}
+      sx={(theme) => navbar(theme, { transparentNavbar, absolute, light, miniSidenav })}
     >
       <Toolbar sx={(theme) => navbarContainer(theme)}>
-        <VuiBox color="inherit" mb={{ xs: 1, md: 0 }} sx={(theme) => navbarRow(theme, { isMini })}>
+        {/* Left content */}
+        <VuiBox color="inherit" mb={{ xs: 1, md: 0 }} sx={(theme) => navbarRow(theme, { isMini, isRight: false })}>
           <Breadcrumbs title={route[route.length - 1]} route={route} light={light} />
           
           {/* Mobile menu button only on mobile */}
@@ -198,10 +194,9 @@ function DashboardNavbar({ absolute, light, isMini }) {
             <IconButton
               size="small"
               color="inherit"
-              sx={{ 
-                ml: 1, 
-                color: "white.main", 
-                display: { xs: "inline-flex", md: "none" } 
+              sx={{
+                color: "white.main",
+                display: { xs: "inline-flex", md: "none" }
               }}
               onClick={handleSidenavToggle}
             >
@@ -209,8 +204,10 @@ function DashboardNavbar({ absolute, light, isMini }) {
             </IconButton>
           )}
         </VuiBox>
+
+        {/* Right content */}
         {isMini ? null : (
-          <VuiBox sx={(theme) => navbarRow(theme, { isMini })}>
+          <VuiBox sx={(theme) => navbarRow(theme, { isMini, isRight: true })}>
             <VuiBox pr={1}>
               <VuiInput
                 placeholder="Type here..."
