@@ -566,13 +566,11 @@ function CreateCampaign() {
               name="start_time"
               value={campaignData.start_time}
               onChange={(e) => {
-                // Ensure the date is in the correct format for datetime-local: yyyy-MM-ddThh:mm
-                const date = new Date(e.target.value);
-                const formattedDate = date.toISOString().slice(0, 16);
+                // Keep the selected local time as is
                 handleChange({
                   target: {
                     name: 'start_time',
-                    value: formattedDate
+                    value: e.target.value
                   }
                 });
               }}
@@ -590,13 +588,11 @@ function CreateCampaign() {
               name="end_time"
               value={campaignData.end_time}
               onChange={(e) => {
-                // Ensure the date is in the correct format for datetime-local: yyyy-MM-ddThh:mm
-                const date = new Date(e.target.value);
-                const formattedDate = date.toISOString().slice(0, 16);
+                // Keep the selected local time as is
                 handleChange({
                   target: {
                     name: 'end_time',
-                    value: formattedDate
+                    value: e.target.value
                   }
                 });
               }}
