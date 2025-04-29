@@ -23,9 +23,8 @@ import Footer from "../../examples/Footer";
 import Table from "../../examples/Tables/Table";
 
 // Data
-import authorsTableData from "./data/authorsTableData";
-import projectsTableData from "./data/projectsTableData";
-import { useState, useMemo } from "react";
+import useCampaignsData from "./data/campaignsTableData";
+import { useState, useMemo, useEffect } from "react";
 
 // Icons
 import SearchIcon from '@mui/icons-material/Search';
@@ -33,40 +32,34 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 function CustomTables() {
-  const { columns, rows } = authorsTableData;
-  const { columns: prCols, rows: prRows } = projectsTableData;
+  const { columns, rows } = useCampaignsData();
 
   // Search state
-  const [authorsSearchQuery, setAuthorsSearchQuery] = useState("");
-  const [projectsSearchQuery, setProjectsSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   
   // Selection state
-  const [selectedAuthorsRows, setSelectedAuthorsRows] = useState([]);
-  const [selectedProjectsRows, setSelectedProjectsRows] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]);
   
-  // Pagination state for Authors table
-  const [authorsPage, setAuthorsPage] = useState(1);
-  const [authorsRowsPerPage, setAuthorsRowsPerPage] = useState(5);
-  
-  // Pagination state for Projects table
-  const [projectsPage, setProjectsPage] = useState(1);
-  const [projectsRowsPerPage, setProjectsRowsPerPage] = useState(5);
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
   
   // Dialog states
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [currentEditItem, setCurrentEditItem] = useState(null);
   const [bulkEditDialogOpen, setBulkEditDialogOpen] = useState(false);
-  const [bulkEditType, setBulkEditType] = useState(''); // 'authors' or 'projects'
+  const [bulkEditType, setBulkEditType] = useState('campaigns');
   const [bulkEditData, setBulkEditData] = useState({ status: "" });
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteIds, setDeleteIds] = useState([]);
-  const [deleteType, setDeleteType] = useState(''); // 'authors' or 'projects'
+  const [deleteType, setDeleteType] = useState('campaigns');
 
   // Filter authors rows based on search query
-  const filteredAuthorsRows = useMemo(() => {
-    if (!authorsSearchQuery.trim()) return rows;
+  // Filter rows based on search query
+  const filteredRows = useMemo(() => {
+    if (!searchQuery.trim()) return rows;
     
-    const lowercaseQuery = authorsSearchQuery.toLowerCase();
+    const lowercaseQuery = searchQuery.toLowerCase();
     return rows.filter(row => {
       // Check if any field contains the search query
       return Object.values(row).some(value => {
@@ -80,89 +73,42 @@ function CustomTables() {
         return false;
       });
     });
-  }, [rows, authorsSearchQuery]);
+  }, [rows, searchQuery]);
 
-  // Filter projects rows based on search query
-  const filteredProjectsRows = useMemo(() => {
-    if (!projectsSearchQuery.trim()) return prRows;
-    
-    const lowercaseQuery = projectsSearchQuery.toLowerCase();
-    return prRows.filter(row => {
-      // Check if any field contains the search query
-      return Object.values(row).some(value => {
-        if (typeof value === 'string') {
-          return value.toLowerCase().includes(lowercaseQuery);
-        } else if (value && typeof value === 'object' && value.props && value.props.children) {
-          // Try to search in React components' text content
-          const childrenText = JSON.stringify(value.props.children);
-          return childrenText.toLowerCase().includes(lowercaseQuery);
-        }
-        return false;
-      });
-    });
-  }, [prRows, projectsSearchQuery]);
+  // Calculate paginated rows
+  const paginatedRows = useMemo(() => {
+    const startIndex = (page - 1) * rowsPerPage;
+    const endIndex = startIndex + rowsPerPage;
+    return filteredRows.slice(startIndex, endIndex);
+  }, [filteredRows, page, rowsPerPage]);
 
-  // Calculate paginated rows for Authors table
-  const paginatedAuthorsRows = useMemo(() => {
-    const startIndex = (authorsPage - 1) * authorsRowsPerPage;
-    const endIndex = startIndex + authorsRowsPerPage;
-    return filteredAuthorsRows.slice(startIndex, endIndex);
-  }, [filteredAuthorsRows, authorsPage, authorsRowsPerPage]);
+  // Calculate total pages
+  const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
 
-  // Calculate paginated rows for Projects table
-  const paginatedProjectsRows = useMemo(() => {
-    const startIndex = (projectsPage - 1) * projectsRowsPerPage;
-    const endIndex = startIndex + projectsRowsPerPage;
-    return filteredProjectsRows.slice(startIndex, endIndex);
-  }, [filteredProjectsRows, projectsPage, projectsRowsPerPage]);
-
-  // Calculate total pages for Authors table
-  const authorsTotalPages = Math.ceil(filteredAuthorsRows.length / authorsRowsPerPage);
-  
-  // Calculate total pages for Projects table
-  const projectsTotalPages = Math.ceil(filteredProjectsRows.length / projectsRowsPerPage);
-
-  // Handle page change for Authors table
-  const handleAuthorsPageChange = (event, newPage) => {
-    setAuthorsPage(newPage);
+  // Handle page change
+  const handlePageChange = (event, newPage) => {
+    setPage(newPage);
   };
 
-  // Handle rows per page change for Authors table
-  const handleAuthorsRowsPerPageChange = (event) => {
-    setAuthorsRowsPerPage(parseInt(event.target.value, 10));
-    setAuthorsPage(1); // Reset to first page when changing rows per page
-  };
-
-  // Handle page change for Projects table
-  const handleProjectsPageChange = (event, newPage) => {
-    setProjectsPage(newPage);
-  };
-
-  // Handle rows per page change for Projects table
-  const handleProjectsRowsPerPageChange = (event) => {
-    setProjectsRowsPerPage(parseInt(event.target.value, 10));
-    setProjectsPage(1); // Reset to first page when changing rows per page
+  // Handle rows per page change
+  const handleRowsPerPageChange = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(1); // Reset to first page when changing rows per page
   };
   
-  // Handle bulk selection for Authors table
-  const handleAuthorsSelect = (selectedIds) => {
-    setSelectedAuthorsRows(selectedIds);
+  // Handle bulk selection
+  const handleSelect = (selectedIds) => {
+    setSelectedRows(selectedIds);
   };
   
-  // Handle bulk selection for Projects table
-  const handleProjectsSelect = (selectedIds) => {
-    setSelectedProjectsRows(selectedIds);
-  };
-  
-  // Handle edit for either table
-  const handleEdit = (item, type) => {
-    setCurrentEditItem({ ...item, type });
+  // Handle edit
+  const handleEdit = (item) => {
+    setCurrentEditItem({ ...item, type: 'campaigns' });
     setEditDialogOpen(true);
   };
   
   // Handle bulk edit
-  const handleBulkEdit = (type) => {
-    setBulkEditType(type);
+  const handleBulkEdit = () => {
     setBulkEditDialogOpen(true);
   };
   
@@ -179,43 +125,28 @@ function CustomTables() {
   // Handle save bulk edit
   const handleSaveBulkEdit = () => {
     // In a real application, you would save the changes to the database here
-    console.log('Saving bulk edit for type:', bulkEditType);
+    console.log('Saving bulk edit for campaigns');
     console.log('Bulk edit data:', bulkEditData);
-    
-    if (bulkEditType === 'authors') {
-      console.log('Selected authors:', selectedAuthorsRows);
-    } else {
-      console.log('Selected projects:', selectedProjectsRows);
-    }
+    console.log('Selected rows:', selectedRows);
     
     // Close the dialog
     setBulkEditDialogOpen(false);
     setBulkEditData({ status: "" });
     
     // Clear selections
-    if (bulkEditType === 'authors') {
-      setSelectedAuthorsRows([]);
-    } else {
-      setSelectedProjectsRows([]);
-    }
+    setSelectedRows([]);
   };
   
   // Handle delete
-  const handleDelete = (id, type) => {
+  const handleDelete = (id) => {
     setDeleteIds([id]);
-    setDeleteType(type);
     setDeleteDialogOpen(true);
   };
   
   // Handle bulk delete
-  const handleBulkDelete = (type) => {
-    if (type === 'authors' && selectedAuthorsRows.length > 0) {
-      setDeleteIds(selectedAuthorsRows);
-      setDeleteType('authors');
-      setDeleteDialogOpen(true);
-    } else if (type === 'projects' && selectedProjectsRows.length > 0) {
-      setDeleteIds(selectedProjectsRows);
-      setDeleteType('projects');
+  const handleBulkDelete = () => {
+    if (selectedRows.length > 0) {
+      setDeleteIds(selectedRows);
       setDeleteDialogOpen(true);
     }
   };
@@ -224,18 +155,13 @@ function CustomTables() {
   const handleConfirmDelete = () => {
     // In a real application, you would delete the items from the database here
     console.log('Deleting items:', deleteIds);
-    console.log('Delete type:', deleteType);
     
     // Close the dialog
     setDeleteDialogOpen(false);
     setDeleteIds([]);
     
     // Clear selections
-    if (deleteType === 'authors') {
-      setSelectedAuthorsRows([]);
-    } else {
-      setSelectedProjectsRows([]);
-    }
+    setSelectedRows([]);
   };
 
   return (
@@ -243,42 +169,42 @@ function CustomTables() {
       <DashboardNavbar />
       <VuiBox py={3}>
         <Grid container spacing={3}>
-          <Grid size={{ xs: 12, md: 12 }}>
-            <Card>
-              <VuiBox display="flex" justifyContent="space-between" alignItems="center" mb="22px" p={3}>
+          <Grid item xs={12} md={12}>
+            <Card sx={{ overflow: 'hidden' }}>
+              <VuiBox display="flex" justifyContent="space-between" alignItems="center" p={3} pb={0}>
                 <VuiTypography variant="lg" color="white">
                   Completed Campaigns
                 </VuiTypography>
                 
-                {/* Search for Authors table */}
+                {/* Search for Campaigns table */}
                 <VuiBox width="40%">
                   <VuiInput
                     placeholder="Search campaigns..."
-                    value={authorsSearchQuery}
-                    onChange={(e) => setAuthorsSearchQuery(e.target.value)}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     icon={{ component: <SearchIcon />, direction: "left" }}
                   />
                 </VuiBox>
               </VuiBox>
               
-              {/* Bulk Actions for Authors */}
-              {selectedAuthorsRows.length > 0 && (
-                <VuiBox display="flex" gap={2} mb={3} px={3}>
+              {/* Bulk Actions */}
+              {selectedRows.length > 0 && (
+                <VuiBox display="flex" gap={2} mt={2} px={3}>
                   <VuiButton
                     variant="contained"
                     color="info"
-                    onClick={() => handleBulkEdit('authors')}
+                    onClick={() => handleBulkEdit('campaigns')}
                     startIcon={<EditIcon />}
                   >
-                    Bulk Edit ({selectedAuthorsRows.length})
+                    Bulk Edit ({selectedRows.length})
                   </VuiButton>
                   <VuiButton
                     variant="contained"
                     color="error"
-                    onClick={() => handleBulkDelete('authors')}
+                    onClick={() => handleBulkDelete('campaigns')}
                     startIcon={<DeleteIcon />}
                   >
-                    Bulk Delete ({selectedAuthorsRows.length})
+                    Bulk Delete ({selectedRows.length})
                   </VuiButton>
                 </VuiBox>
               )}
@@ -295,132 +221,41 @@ function CustomTables() {
                         `${borderWidth[1]} solid ${grey[700]}`,
                     },
                   },
+                  "& .MuiTableCell-root": {
+                    padding: "12px 24px",
+                  }
                 }}
                 p={3}
+                mt={2}
               >
                 <Table
                   columns={columns}
-                  rows={paginatedAuthorsRows}
-                  onBulkSelect={handleAuthorsSelect}
-                  selectedRows={selectedAuthorsRows}
-                  onEdit={(item) => handleEdit(item, 'authors')}
-                  onDelete={(id) => handleDelete(id, 'authors')}
+                  rows={paginatedRows}
+                  onBulkSelect={handleSelect}
+                  selectedRows={selectedRows}
+                  onEdit={(item) => handleEdit(item, 'campaigns')}
+                  onDelete={(id) => handleDelete(id, 'campaigns')}
                 />
                 
-                {/* Pagination for Authors table */}
-                <VuiBox display="flex" justifyContent="space-between" alignItems="center" mt={3}>
-                  <Box display="flex" alignItems="center">
-                    <VuiTypography variant="button" color="text" mr={1}>
-                      Rows per page:
-                    </VuiTypography>
-                    <Select
-                      value={authorsRowsPerPage}
-                      onChange={handleAuthorsRowsPerPageChange}
-                      size="small"
-                      sx={{
-                        color: 'white',
-                        '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.3)' },
-                        '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.5)' },
-                        '.MuiSvgIcon-root': { color: 'white' }
-                      }}
-                    >
-                      <MenuItem value={5}>5</MenuItem>
-                      <MenuItem value={10}>10</MenuItem>
-                      <MenuItem value={25}>25</MenuItem>
-                    </Select>
-                  </Box>
-                  
-                  <Pagination
-                    count={authorsTotalPages}
-                    page={authorsPage}
-                    onChange={handleAuthorsPageChange}
-                    color="primary"
-                    sx={{
-                      '.MuiPaginationItem-root': {
-                        color: 'white',
-                      },
-                      '.Mui-selected': {
-                        backgroundColor: 'primary.main',
-                      }
-                    }}
-                  />
-                </VuiBox>
-              </VuiBox>
-            </Card>
-          </Grid>
-          <Grid size={{ xs: 12, md: 12 }} mt={3}>
-            <Card>
-              <VuiBox display="flex" justifyContent="space-between" alignItems="center" p={3}>
-                <VuiTypography variant="lg" color="white">
-                  Projects
-                </VuiTypography>
-                
-                {/* Search for Projects table */}
-                <VuiBox width="40%">
-                  <VuiInput
-                    placeholder="Search projects..."
-                    value={projectsSearchQuery}
-                    onChange={(e) => setProjectsSearchQuery(e.target.value)}
-                    icon={{ component: <SearchIcon />, direction: "left" }}
-                  />
-                </VuiBox>
-              </VuiBox>
-              
-              {/* Bulk Actions for Projects */}
-              {selectedProjectsRows.length > 0 && (
-                <VuiBox display="flex" gap={2} mb={3} px={3}>
-                  <VuiButton
-                    variant="contained"
-                    color="info"
-                    onClick={() => handleBulkEdit('projects')}
-                    startIcon={<EditIcon />}
-                  >
-                    Bulk Edit ({selectedProjectsRows.length})
-                  </VuiButton>
-                  <VuiButton
-                    variant="contained"
-                    color="error"
-                    onClick={() => handleBulkDelete('projects')}
-                    startIcon={<DeleteIcon />}
-                  >
-                    Bulk Delete ({selectedProjectsRows.length})
-                  </VuiButton>
-                </VuiBox>
-              )}
-              
-              <VuiBox
-                sx={{
-                  "& th": {
-                    borderBottom: ({ borders: { borderWidth }, palette: { grey } }) =>
+                {/* Pagination */}
+                <VuiBox
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  mt={3}
+                  sx={{
+                    borderTop: ({ borders: { borderWidth }, palette: { grey } }) =>
                       `${borderWidth[1]} solid ${grey[700]}`,
-                  },
-                  "& .MuiTableRow-root:not(:last-child)": {
-                    "& td": {
-                      borderBottom: ({ borders: { borderWidth }, palette: { grey } }) =>
-                        `${borderWidth[1]} solid ${grey[700]}`,
-                    },
-                  },
-                }}
-                p={3}
-              >
-                <Table
-                  columns={prCols}
-                  rows={paginatedProjectsRows}
-                  onBulkSelect={handleProjectsSelect}
-                  selectedRows={selectedProjectsRows}
-                  onEdit={(item) => handleEdit(item, 'projects')}
-                  onDelete={(id) => handleDelete(id, 'projects')}
-                />
-                
-                {/* Pagination for Projects table */}
-                <VuiBox display="flex" justifyContent="space-between" alignItems="center" mt={3}>
+                    pt: 2
+                  }}
+                >
                   <Box display="flex" alignItems="center">
                     <VuiTypography variant="button" color="text" mr={1}>
                       Rows per page:
                     </VuiTypography>
                     <Select
-                      value={projectsRowsPerPage}
-                      onChange={handleProjectsRowsPerPageChange}
+                      value={rowsPerPage}
+                      onChange={handleRowsPerPageChange}
                       size="small"
                       sx={{
                         color: 'white',
@@ -436,9 +271,9 @@ function CustomTables() {
                   </Box>
                   
                   <Pagination
-                    count={projectsTotalPages}
-                    page={projectsPage}
-                    onChange={handleProjectsPageChange}
+                    count={totalPages}
+                    page={page}
+                    onChange={handlePageChange}
                     color="primary"
                     sx={{
                       '.MuiPaginationItem-root': {
@@ -468,15 +303,26 @@ function CustomTables() {
           }
         }}
       >
-        <DialogTitle>Edit {currentEditItem?.type === 'authors' ? 'Author' : 'Project'}</DialogTitle>
+        <DialogTitle>Edit Campaign</DialogTitle>
         <DialogContent>
           <VuiBox mb={2} mt={2}>
             <VuiTypography variant="button" color="text" fontWeight="regular" mb={1} display="block">
-              {currentEditItem?.type === 'authors' ? 'Name' : 'Project Name'}
+              Campaign Name
             </VuiTypography>
             <VuiInput
               fullWidth
-              placeholder={currentEditItem?.type === 'authors' ? 'Author Name' : 'Project Name'}
+              placeholder="Campaign Name"
+              value={currentEditItem?.campaign?.props?.name || ''}
+              onChange={(e) => setCurrentEditItem({
+                ...currentEditItem,
+                campaign: {
+                  ...currentEditItem.campaign,
+                  props: {
+                    ...currentEditItem.campaign.props,
+                    name: e.target.value
+                  }
+                }
+              })}
             />
           </VuiBox>
           <VuiBox mb={2}>
@@ -485,7 +331,17 @@ function CustomTables() {
             </VuiTypography>
             <Select
               fullWidth
-              defaultValue="online"
+              value={currentEditItem?.status?.props?.badgeContent?.toLowerCase() || ''}
+              onChange={(e) => setCurrentEditItem({
+                ...currentEditItem,
+                status: {
+                  ...currentEditItem.status,
+                  props: {
+                    ...currentEditItem.status.props,
+                    badgeContent: e.target.value.charAt(0).toUpperCase() + e.target.value.slice(1)
+                  }
+                }
+              })}
               sx={{
                 color: 'white',
                 '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.3)' },
@@ -521,7 +377,7 @@ function CustomTables() {
         }}
       >
         <DialogTitle>
-          Bulk Edit {bulkEditType === 'authors' ? 'Authors' : 'Projects'} ({bulkEditType === 'authors' ? selectedAuthorsRows.length : selectedProjectsRows.length})
+          Bulk Edit Campaigns ({selectedRows.length})
         </DialogTitle>
         <DialogContent>
           <VuiBox mb={2} mt={2}>
