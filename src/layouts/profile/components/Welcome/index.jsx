@@ -22,7 +22,7 @@ import welcome from "../../../../assets/images/welcome-profile.png";
 import VuiTypography from "../../../../components/VuiTypography/index";
 import VuiBox from "../../../../components/VuiBox/index";
 
-const Welcome = () => {
+const Welcome = ({ email = 'Not available', role = 'user' }) => {
   return (
     <Card
       sx={({ breakpoints }) => ({
@@ -38,10 +38,10 @@ const Welcome = () => {
       <VuiBox display="flex" flexDirection="column" sx={{ height: "100%" }}>
         <VuiBox display="flex" flexDirection="column" mb="auto">
           <VuiTypography color="white" variant="h3" fontWeight="bold" mb="3px">
-            Welcome back!
+            Welcome to Dashboard
           </VuiTypography>
           <VuiTypography color="white" variant="button" fontWeight="regular">
-            Nice to see you, Mark Johnson!
+            {email} • {role}
           </VuiTypography>
         </VuiBox>
         <VuiBox justifySelf="flex-end">
@@ -69,7 +69,7 @@ const Welcome = () => {
               },
             }}
           >
-            Tap to record
+            View Profile Settings
             <Icon sx={{ fontWeight: "bold", ml: "5px" }}>arrow_forward</Icon>
           </VuiTypography>
         </VuiBox>

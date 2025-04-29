@@ -1,249 +1,253 @@
-/*!
-
-=========================================================
-* Vision UI Free React - v1.0.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/vision-ui-free-react
-* Copyright 2021 Creative Tim (https://www.creative-tim.com/)
-* Licensed under MIT (https://github.com/creativetimofficial/vision-ui-free-react/blob/master LICENSE.md)
-
-* Design and Coded by Simmmple & Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
-
 import React from 'react';
-import { Card, Stack, Grid } from '@mui/material';
+import { Card, Grid } from '@mui/material';
 import VuiBox from '../../../../components/VuiBox';
 import VuiTypography from '../../../../components/VuiTypography';
 import GreenLightning from '../../../../assets/images/shapes/green-lightning.svg';
 import WhiteLightning from '../../../../assets/images/shapes/white-lightning.svg';
-import linearGradient from '../../../../assets/theme/functions/linearGradient';
 import colors from '../../../../assets/theme/base/colors';
 import carProfile from '../../../../assets/images/shapes/car-profile.svg';
 import LineChart from '../../../../examples/Charts/LineCharts/LineChart';
-import { lineChartDataProfile1, lineChartDataProfile2 } from '../../../../variables/charts';
-import { lineChartOptionsProfile2, lineChartOptionsProfile1 } from '../../../../variables/charts';
+import { lineChartDataProfile1 } from '../../data/lineChartData1';
+import { lineChartDataProfile2 } from '../../data/lineChartData2';
+import { lineChartOptionsProfile1 } from '../../data/lineChartOptions1';
+import { lineChartOptionsProfile2 } from '../../data/lineChartOptions2';
 import CircularProgress from '@mui/material/CircularProgress';
+
 const CarInformations = () => {
-	const { gradients, info } = colors;
-	const { cardContent } = gradients;
+	const { info } = colors;
+
 	return (
 		<Card
-			sx={({ breakpoints }) => ({
-				[breakpoints.up('xxl')]: {
-					maxHeight: '400px'
-				}
-			})}>
-			<VuiBox display='flex' flexDirection='column'>
-				<VuiTypography variant='lg' color='white' fontWeight='bold' mb='6px'>
-					Car Informations
-				</VuiTypography>
-				<VuiTypography variant='button' color='text' fontWeight='regular' mb='30px'>
-					Hello, Mark Johnson! Your Car is ready.
-				</VuiTypography>
-				<Stack
-					spacing='24px'
-					background='#fff'
-					sx={({ breakpoints }) => ({
-						[breakpoints.up('sm')]: {
-							flexDirection: 'column'
-						},
-						[breakpoints.up('md')]: {
-							flexDirection: 'row'
-						},
-						[breakpoints.only('xl')]: {
-							flexDirection: 'column'
-						}
-					})}>
-					<VuiBox
-						display='flex'
-						flexDirection='column'
-						justifyContent='center'
-						sx={({ breakpoints }) => ({
-							[breakpoints.only('sm')]: {
-								alignItems: 'center'
-							}
-						})}
-						alignItems='center'>
-						<VuiBox sx={{ position: 'relative', display: 'inline-flex' }}>
-							<CircularProgress variant='determinate' value={60} size={170} color='info' />
-							<VuiBox display='flex' flexDirection='column' justifyContent='center' alignItems='center'>
-								<VuiBox component='img' src={GreenLightning} />
-								<VuiTypography color='white' variant='h2' mt='6px' fontWeight='bold' mb='4px'>
-									68%
+			sx={{
+				background: 'linear-gradient(126.97deg, rgba(6, 11, 40, 0.74) 28.26%, rgba(10, 14, 35, 0.71) 91.2%)',
+				borderRadius: '20px',
+				minHeight: '500px',
+				height: 'auto',
+				overflow: 'visible'
+			}}
+		>
+			<VuiBox p={3} pb={18} sx={{ height: '100%', overflow: 'visible' }}>
+				<VuiBox display="flex" alignItems="center" mb={2}>
+					<VuiTypography variant='lg' color='white' fontWeight='bold' mr={1}>
+						Car Informations
+					</VuiTypography>
+					<VuiTypography variant='button' color='text' fontWeight='regular'>
+						Hello, Mark Johnson
+					</VuiTypography>
+				</VuiBox>
+
+				<Grid container spacing={3} sx={{ width: '100%' }}>
+					<Grid size={{ xs: 12, md: 5 }} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+						<VuiBox sx={{ position: 'relative', display: 'inline-flex', mb: 3 }}>
+							<CircularProgress
+								variant='determinate'
+								value={70}
+								size={200}
+								color='info'
+								sx={{
+									'& .MuiCircularProgress-circle': {
+										strokeWidth: 4
+									}
+								}}
+							/>
+							<VuiBox
+								sx={{
+									top: 0,
+									left: 0,
+									bottom: 0,
+									right: 0,
+									position: 'absolute',
+									display: 'flex',
+									flexDirection: 'column',
+									alignItems: 'center',
+									justifyContent: 'center',
+								}}
+							>
+								<VuiBox component='img' src={GreenLightning} mb={1} />
+								<VuiTypography color='white' variant='h2' fontWeight='bold'>
+									98%
 								</VuiTypography>
 								<VuiTypography color='text' variant='caption'>
 									Current Load
 								</VuiTypography>
 							</VuiBox>
 						</VuiBox>
-						<VuiBox
-							display='flex'
-							justifyContent='center'
-							flexDirection='column'
-							sx={{ textAlign: 'center' }}>
-							<VuiTypography color='white' variant='lg' fontWeight='bold' mb='2px' mt='18px'>
+
+						<VuiBox textAlign='center'>
+							<VuiTypography color='white' variant='lg' fontWeight='bold'>
 								0h 58 min
 							</VuiTypography>
 							<VuiTypography color='text' variant='button' fontWeight='regular'>
 								Time to full charge
 							</VuiTypography>
 						</VuiBox>
-					</VuiBox>
-					<Grid container spacing={3} alignItems="center">
-						<Grid size={{ xs: 12, md: 5.5, xl: 5.8, xxl: 5.5 }}>
-							<VuiBox
-								display='flex'
-								p='18px'
-								alignItems='center'
-								sx={{
-									background: linearGradient(cardContent.main, cardContent.state, cardContent.deg),
-									minHeight: '110px',
-									borderRadius: '20px'
-								}}>
-								<VuiBox display='flex' flexDirection='column' mr='auto'>
-									<VuiTypography color='text' variant='caption' fontWeight='medium' mb='2px'>
-										Battery Health
-									</VuiTypography>
-									<VuiTypography
-										color='white'
-										variant='h4'
-										fontWeight='bold'
-										sx={({ breakpoints }) => ({
-											[breakpoints.only('xl')]: {
-												fontSize: '20px'
-											}
-										})}>
-										76%
-									</VuiTypography>
-								</VuiBox>
+					</Grid>
+
+					<Grid size={{ xs: 12, md: 7 }} sx={{ width: '100%' }}>
+						<Grid container spacing={2}>
+							<Grid size={{ xs: 12, sm: 6 }}>
 								<VuiBox
 									display='flex'
-									justifyContent='center'
+									p='18px'
 									alignItems='center'
 									sx={{
-										background: info.main,
-										borderRadius: '12px',
-										width: '56px',
-										height: '56px'
-									}}>
-									<VuiBox component='img' src={carProfile} />
+										background: 'rgba(0, 0, 0, 0.2)',
+										borderRadius: '20px'
+									}}
+								>
+									<VuiBox display='flex' flexDirection='column' mr='auto'>
+										<VuiTypography color='text' variant='caption' fontWeight='medium' mb='2px'>
+											Battery Health
+										</VuiTypography>
+										<VuiTypography color='white' variant='h4' fontWeight='bold'>
+											99%
+										</VuiTypography>
+									</VuiBox>
+									<VuiBox
+										display='flex'
+										justifyContent='center'
+										alignItems='center'
+										sx={{
+											background: info.main,
+											borderRadius: '12px',
+											width: '56px',
+											height: '56px'
+										}}
+									>
+										<VuiBox component='img' src={carProfile} />
+									</VuiBox>
 								</VuiBox>
-							</VuiBox>
-						</Grid>
-						<Grid size={{ xs: 12, md: 5.5, xl: 5.8, xxl: 5.5 }}>
-							<VuiBox
-								display='flex'
-								p='18px'
-								alignItems='center'
-								sx={{
-									background: linearGradient(cardContent.main, cardContent.state, cardContent.deg),
-									borderRadius: '20px'
-								}}>
-								<VuiBox display='flex' flexDirection='column' mr='auto'>
-									<VuiTypography color='text' variant='caption' fontWeight='medium' mb='2px'>
-										Efficiency
-									</VuiTypography>
-									<VuiTypography
-										color='white'
-										variant='h4'
-										fontWeight='bold'
-										sx={({ breakpoints }) => ({
-											[breakpoints.only('xl')]: {
-												fontSize: '20px'
-											}
-										})}>
-										+20%
-									</VuiTypography>
-								</VuiBox>
-								<VuiBox sx={{ maxHeight: '75px' }}>
-									<LineChart
-										lineChartData={lineChartDataProfile1}
-										lineChartOptions={lineChartOptionsProfile1}
-									/>
-								</VuiBox>
-							</VuiBox>
-						</Grid>
-						<Grid size={{ xs: 12, md: 5.5, xl: 5.8, xxl: 5.5 }}>
-							<VuiBox
-								display='flex'
-								p='18px'
-								alignItems='center'
-								sx={{
-									background: linearGradient(cardContent.main, cardContent.state, cardContent.deg),
-									borderRadius: '20px',
-									minHeight: '110px'
-								}}>
-								<VuiBox display='flex' flexDirection='column' mr='auto'>
-									<VuiTypography color='text' variant='caption' fontWeight='medium' mb='2px'>
-										Consumption
-									</VuiTypography>
-									<VuiTypography
-										color='white'
-										variant='h4'
-										fontWeight='bold'
-										sx={({ breakpoints }) => ({
-											[breakpoints.only('xl')]: {
-												fontSize: '20px'
-											}
-										})}>
-										163W/km
-									</VuiTypography>
-								</VuiBox>
+							</Grid>
+
+							<Grid size={{ xs: 12, sm: 6 }}>
 								<VuiBox
 									display='flex'
-									justifyContent='center'
+									p='18px'
 									alignItems='center'
 									sx={{
-										background: info.main,
-										borderRadius: '12px',
-										width: '56px',
-										height: '56px'
-									}}>
-									<VuiBox component='img' src={WhiteLightning} />
+										background: 'rgba(0, 0, 0, 0.2)',
+										borderRadius: '20px'
+									}}
+								>
+									<VuiBox display='flex' flexDirection='column' mr='auto'>
+										<VuiTypography color='text' variant='caption' fontWeight='medium' mb='2px'>
+											Voltage Now
+										</VuiTypography>
+										<VuiTypography color='white' variant='h4' fontWeight='bold'>
+											57%
+										</VuiTypography>
+									</VuiBox>
+									<VuiBox
+										display='flex'
+										justifyContent='center'
+										alignItems='center'
+										sx={{
+											background: info.main,
+											borderRadius: '12px',
+											width: '56px',
+											height: '56px'
+										}}
+									>
+										<VuiBox component='img' src={WhiteLightning} />
+									</VuiBox>
 								</VuiBox>
-							</VuiBox>
-						</Grid>
-						<Grid size={{ xs: 12, md: 5.5, xl: 5.8, xxl: 5.5 }}>
-							<VuiBox
-								display='flex'
-								p='18px'
-								alignItems='center'
-								sx={{
-									background: linearGradient(cardContent.main, cardContent.state, cardContent.deg),
-									borderRadius: '20px'
-								}}>
-								<VuiBox display='flex' flexDirection='column' mr='auto'>
-									<VuiTypography color='text' variant='caption' fontWeight='medium' mb='2px'>
-										This Week
-									</VuiTypography>
-									<VuiTypography
-										color='white'
-										variant='h4'
-										fontWeight='bold'
-										sx={({ breakpoints }) => ({
-											[breakpoints.only('xl')]: {
-												fontSize: '20px'
-											}
-										})}>
-										1.342km
-									</VuiTypography>
+							</Grid>
+
+							<Grid size={{ xs: 12, sm: 6 }}>
+								<VuiBox
+									display='flex'
+									p='18px'
+									alignItems='center'
+									sx={{
+										background: 'rgba(0, 0, 0, 0.2)',
+										borderRadius: '20px'
+									}}
+								>
+									<VuiBox display='flex' flexDirection='column' mr='auto'>
+										<VuiTypography color='text' variant='caption' fontWeight='medium' mb='2px'>
+											Range
+										</VuiTypography>
+										<VuiTypography color='white' variant='h4' fontWeight='bold'>
+											157k%
+										</VuiTypography>
+									</VuiBox>
+									<VuiBox
+										display='flex'
+										justifyContent='center'
+										alignItems='center'
+										sx={{
+											background: info.main,
+											borderRadius: '12px',
+											width: '56px',
+											height: '56px'
+										}}
+									>
+										<VuiBox component='img' src={WhiteLightning} />
+									</VuiBox>
 								</VuiBox>
-								<VuiBox sx={{ maxHeight: '75px' }}>
-									<LineChart
-										lineChartData={lineChartDataProfile2}
-										lineChartOptions={lineChartOptionsProfile2}
-									/>
+							</Grid>
+
+							<Grid size={{ xs: 12, sm: 6 }}>
+								<VuiBox
+									display='flex'
+									p='18px'
+									alignItems='center'
+									sx={{
+										background: 'rgba(0, 0, 0, 0.2)',
+										borderRadius: '20px'
+									}}
+								>
+									<VuiBox display='flex' flexDirection='column' mr='auto'>
+										<VuiTypography color='text' variant='caption' fontWeight='medium' mb='2px'>
+											Energy
+										</VuiTypography>
+										<VuiTypography color='white' variant='h4' fontWeight='bold'>
+											84%
+										</VuiTypography>
+									</VuiBox>
+									<VuiBox
+										display='flex'
+										justifyContent='center'
+										alignItems='center'
+										sx={{
+											background: info.main,
+											borderRadius: '12px',
+											width: '56px',
+											height: '56px'
+										}}
+									>
+										<VuiBox component='img' src={WhiteLightning} />
+									</VuiBox>
 								</VuiBox>
-							</VuiBox>
+							</Grid>
 						</Grid>
 					</Grid>
-				</Stack>
+
+					<Grid size={{ xs: 12 }} sx={{ mt: 2 }}>
+						<Grid container spacing={2}>
+							<Grid size={{ xs: 12, sm: 6 }}>
+								<VuiBox sx={{ height: '200px', overflow: 'visible' }}>
+									<LineChart
+										chart={{
+											data: lineChartDataProfile1,
+											options: lineChartOptionsProfile1
+										}}
+									/>
+								</VuiBox>
+							</Grid>
+							<Grid size={{ xs: 12, sm: 6 }}>
+								<VuiBox sx={{ height: '200px', overflow: 'visible' }}>
+									<LineChart sx={{ height: '280px' }}
+										chart={{
+											data: lineChartDataProfile2,
+											options: lineChartOptionsProfile2
+										}}
+									/>
+								</VuiBox>
+							</Grid>
+						</Grid>
+					</Grid>
+				</Grid>
 			</VuiBox>
 		</Card>
 	);

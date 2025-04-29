@@ -18,11 +18,20 @@
 
 export const lineChartOptionsProfile2 = {
   chart: {
-    height: "50px",
+    height: "85%",
     toolbar: {
       show: false,
     },
     redrawOnParentResize: true,
+    title: {
+      text: "Battery Level",
+      align: "left",
+      style: {
+        fontSize: "14px",
+        fontWeight: "bold",
+        color: "#c8cfca"
+      }
+    }
   },
   tooltip: {
     theme: "dark",
@@ -34,7 +43,7 @@ export const lineChartOptionsProfile2 = {
     curve: "smooth",
   },
   xaxis: {
-    type: "datetime",
+    type: "category",
     categories: [
       "Jan",
       "Feb",
@@ -50,22 +59,32 @@ export const lineChartOptionsProfile2 = {
       "Dec",
     ],
     labels: {
-      show: false,
+      show: true,
       style: {
         colors: "#c8cfca",
         fontSize: "12px",
       },
     },
     axisBorder: {
-      show: false,
+      show: true,
+      color: "#56577A"
     },
     axisTicks: {
-      show: false,
+      show: true,
+      color: "#56577A"
     },
   },
   yaxis: {
-    show: false,
+    show: true,
+    title: {
+      text: "Percentage",
+      style: {
+        color: "#c8cfca",
+        fontSize: "12px"
+      }
+    },
     labels: {
+      show: true,
       style: {
         colors: "#c8cfca",
         fontSize: "12px",
@@ -73,7 +92,12 @@ export const lineChartOptionsProfile2 = {
     },
   },
   legend: {
-    show: false,
+    show: true,
+    position: "top",
+    horizontalAlign: "right",
+    labels: {
+      colors: "#c8cfca"
+    }
   },
   grid: {
     show: false,

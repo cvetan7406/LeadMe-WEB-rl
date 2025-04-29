@@ -83,27 +83,15 @@ const withProtection = (Component) => {
 };
 
 const routes = [
-  // {
-  //   type: "collapse",
-  //   name: "Profile",
-  //   key: "profile-section",
-  //   icon: <PersonIcon sx={{ fontSize: "15px" }} />,
-  //   collapse: [
-  //     {
-  //       name: "View Profile",
-  //       key: "profile",
-  //       route: "/profile",
-  //       component: withProtection(Profile),
-  //     },
-  //     {
-  //       name: "Edit Profile",
-  //       key: "edit-profile",
-  //       route: "/profile/edit",
-  //       component: withProtection(Profile),
-  //     },
-  //   ],
-  //   collapseIcon: <KeyboardArrowDownIcon sx={{ fontSize: "15px" }} />,
-  // },
+  {
+    type: "collapse",
+    name: "Profile",
+    key: "profile-section",
+    icon: <PersonIcon sx={{ fontSize: "15px" }} />,
+    route: "/profile",
+    component: withProtection(Profile),
+    noCollapse: true,
+  },
   {
     type: "collapse",
     name: "Homepage",

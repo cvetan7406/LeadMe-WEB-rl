@@ -1,23 +1,5 @@
-/*!
-
-=========================================================
-* Vision UI Free React - v1.0.0
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/vision-ui-free-react
-* Copyright 2021 Creative Tim (https://www.creative-tim.com/)
-* Licensed under MIT (https://github.com/creativetimofficial/vision-ui-free-react/blob/master LICENSE.md)
-
-* Design and Coded by Simmmple & Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
-
-// @mui material components
-// @mui icons
+import { useState, useEffect } from 'react';
+import { supabase } from '../../config/supabaseClient';
 import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import TwitterIcon from "@mui/icons-material/Twitter";
@@ -46,92 +28,104 @@ import Welcome from "./components/Welcome/index";
 import CarInformations from "./components/CarInformations";
 
 function Overview() {
+  const [user, setUser] = useState(null);
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    activeUsers: 0,
+    ssoUsers: 0,
+    emailConfirmed: 0,
+    newUsersThisWeek: 0
+  });
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+
+    const fetchStats = async () => {
+      const now = new Date();
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+      // Get total users count
+      const { count: totalUsers } = await supabase
+        .from('users')
+        .select('*', { count: 'exact' });
+
+      // Get active users (not deleted or banned)
+      const { count: activeUsers } = await supabase
+        .from('users')
+        .select('*', { count: 'exact' })
+        .is('deleted_at', null)
+        .is('banned_until', null);
+
+      // Get SSO users count
+      const { count: ssoUsers } = await supabase
+        .from('users')
+        .select('*', { count: 'exact' })
+        .eq('is_sso_user', true);
+
+      // Get email confirmed users
+      const { count: emailConfirmed } = await supabase
+        .from('users')
+        .select('*', { count: 'exact' })
+        .not('email_confirmed_at', 'is', null);
+
+      // Get new users this week
+      const { count: newUsersThisWeek } = await supabase
+        .from('users')
+        .select('*', { count: 'exact' })
+        .gte('created_at', weekAgo.toISOString());
+
+      setStats({
+        totalUsers,
+        activeUsers,
+        ssoUsers,
+        emailConfirmed,
+        newUsersThisWeek
+      });
+    };
+
+    fetchUserData();
+    fetchStats();
+  }, []);
+
   return (
     <DashboardLayout>
       <Header />
       <VuiBox mt={5} mb={3}>
-        <Grid
-          container
-          spacing={3}
-          sx={({ breakpoints }) => ({
-            [breakpoints.up('xl')]: {
-              gridTemplateColumns: "repeat(3, 1fr)",
-            },
-          })}
-        >
-          <Grid
-            item
-            xs={12}
-            sm={6}
-            md={4}
-            sx={({ breakpoints }) => ({
-              minHeight: "400px",
-              [breakpoints.up('xl')]: {
-                gridArea: "1 / 1 / 2 / 2",
-              },
-            })}
-          >
-            <Welcome />
+        <Grid container spacing={3}>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Welcome email={user?.email} role={user?.role} />
           </Grid>
-          <Grid
-            item
-            xs={12}
-            sm={6}
-            md={4}
-            sx={({ breakpoints }) => ({
-              [breakpoints.up('xl')]: {
-                gridArea: "2 / 1 / 3 / 3",
-              },
-            })}
-          >
-            <CarInformations />
-          </Grid>
-          <Grid
-            item
-            xs={12}
-            sm={6}
-            md={4}
-            sx={({ breakpoints }) => ({
-              [breakpoints.up('xl')]: {
-                gridArea: "1 / 2 / 2 / 3",
-              },
-            })}
-          >
+          <Grid size={{ xs: 12, md: 6 }}>
             <ProfileInfoCard
               title="profile information"
-              description="Hi, I'm Mark Johnson, Decisions: If you can't decide, the answer is no. If two equally difficult paths, choose the one more painful in the short term (pain avoidance is creating an illusion of equality)."
+              description={user?.raw_user_meta_data?.description || "No description provided"}
               info={{
-                fullName: "Mark Johnson",
-                mobile: "(44) 123 1234 123",
-                email: "mark@simmmple.com",
-                location: "United States",
+                fullName: user?.raw_user_meta_data?.full_name || "Not set",
+                mobile: user?.phone || "Not set",
+                email: user?.email || "Not set",
+                role: user?.role || "user",
+                lastLogin: user?.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleString() : "Never"
               }}
-              social={[
-                {
-                  link: "https://www.facebook.com/CreativeTim/",
-                  icon: <FacebookIcon />,
-                  color: "facebook",
-                },
-                {
-                  link: "https://twitter.com/creativetim",
-                  icon: <TwitterIcon />,
-                  color: "twitter",
-                },
-                {
-                  link: "https://www.instagram.com/creativetimofficial/",
-                  icon: <InstagramIcon />,
-                  color: "instagram",
-                },
-              ]}
+              social={[]}
             />
           </Grid>
         </Grid>
       </VuiBox>
+      <VuiBox mb={3}>
+        <Grid container>
+          <Grid size={{ xs: 12 }}>
+            <CarInformations />
+          </Grid>
+        </Grid>
+      </VuiBox>
       <Grid container spacing={3} mb="30px">
-        <Grid size={{ xs: 12, xl: 3 }} height="100%">
+        <Grid size={{ xs: 12, xl: 3 }} sx={{ height: "100%" }}>
           <PlatformSettings />
         </Grid>
-        <Grid size={{ xs: 12, xl: 9 }}>
+        <Grid size={{ xs: 12, xl: 9 }} sx={{ width: "100%" }}>
           <Card>
             <VuiBox display="flex" flexDirection="column" height="100%">
               <VuiBox display="flex" flexDirection="column" mb="24px">
@@ -143,7 +137,7 @@ function Overview() {
                 </VuiTypography>
               </VuiBox>
               <Grid container spacing={3}>
-                <Grid size={{ xs: 12, md: 6, xl: 4 }}>
+                <Grid size={{ xs: 12, md: 6, xl: 4 }} sx={{ width: "100%" }}>
                   <DefaultProjectCard
                     image={profile1}
                     label="project #2"
@@ -163,7 +157,7 @@ function Overview() {
                     ]}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, md: 6, xl: 4 }}>
+                <Grid size={{ xs: 12, md: 6, xl: 4 }} sx={{ width: "100%" }}>
                   <DefaultProjectCard
                     image={profile2}
                     label="project #1"
@@ -183,7 +177,7 @@ function Overview() {
                     ]}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, md: 6, xl: 4 }}>
+                <Grid size={{ xs: 12, md: 6, xl: 4 }} sx={{ width: "100%" }}>
                   <DefaultProjectCard
                     image={profile3}
                     label="project #3"
