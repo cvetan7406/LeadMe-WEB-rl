@@ -48,6 +48,7 @@ import Profile from "./layouts/profile/index.jsx";
 import SignUp from "./layouts/authentication/sign-up/index.jsx";
 import FileUpload from "./layouts/lead-upload/index.jsx";
 import ManageContacts from "./layouts/lead-upload/ManageContacts.jsx";
+import LogsMonitoring from "./layouts/logs/index.jsx";
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 // Material Icons
 import CreateCampaign from "./layouts/campaign/compontents/create.jsx";
@@ -64,6 +65,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import CallIcon from '@mui/icons-material/Call';
 import { IoDocumentText } from 'react-icons/io5';
 import BeenhereOutlinedIcon from '@mui/icons-material/BeenhereOutlined';
+import AssessmentIcon from '@mui/icons-material/Assessment';
 // Protected Route Component
 import ProtectedRoute from "./components/ProtectedRoute/index.jsx";
 import ScriptEditor from "./layouts/scripts/index.jsx";
@@ -202,7 +204,15 @@ const routes = [
     ],
     collapseIcon: <KeyboardArrowDownIcon sx={{ fontSize: "15px" }} />,
   },
-  
+  {
+    type: "collapse",
+    name: "System Logs",
+    key: "logs",
+    route: "/logs",
+    icon: <AssessmentIcon sx={{ fontSize: "15px" }} />,
+    component: withProtection(LogsMonitoring),
+    noCollapse: true,
+  },
   // {
   //   type: "collapse",
   //   name: "Finance",
