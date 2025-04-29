@@ -19,7 +19,7 @@
 import { useState, useEffect, useMemo } from "react";
 import React from "react";
 import ReactGA from 'react-ga4'; // Import react-ga
-import SettingsIcon from '@mui/icons-material/Settings';
+import ChatIcon from '@mui/icons-material/Chat';
 
 // react-router components
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
@@ -35,7 +35,7 @@ import VuiBox from "./components/VuiBox";
 
 // Vision UI Dashboard React example components
 import Sidenav from "./examples/Sidenav";
-import Configurator from "./examples/Configurator";
+import ChatAI from "./examples/ChatAI";
 
 // Vision UI Dashboard React themes
 import theme from "./assets/theme";
@@ -147,7 +147,7 @@ export default function App() {
       sx={{ cursor: "pointer" }}
       onClick={handleConfiguratorOpen}
     >
-      <SettingsIcon fontSize="default" color="inherit" />
+      <ChatIcon fontSize="default" color="inherit" />
     </VuiBox>
   );
 
@@ -166,11 +166,11 @@ export default function App() {
                 onMouseEnter={handleOnMouseEnter}
                 onMouseLeave={handleOnMouseLeave}
               />
-              <Configurator />
+              <ChatAI />
               {configsButton}
             </>
           )}
-          {layout === "vr" && <Configurator />}
+          {layout === "vr" && <ChatAI />}
           <Routes>
             {getFilteredRoutes(routes)}
             <Route path="/authentication/sign-in" element={<SignIn />} />
@@ -192,11 +192,11 @@ export default function App() {
               onMouseEnter={handleOnMouseEnter}
               onMouseLeave={handleOnMouseLeave}
             />
-            <Configurator />
+            <ChatAI />
             {configsButton}
           </>
         )}
-        {layout === "vr" && <Configurator />}
+        {layout === "vr" && <ChatAI />}
         <Routes>
           {getFilteredRoutes(routes)}
           <Route path="*" element={<Navigate to="/home" />} />
