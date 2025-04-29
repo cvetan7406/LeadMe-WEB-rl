@@ -107,9 +107,11 @@ function CreateCampaign() {
     const fetchData = async () => {
       try {
         // Fetch scripts
+        // Fetch scripts - only show scripts created by the current user
         const { data: scriptsData, error: scriptsError } = await supabase
           .from('scripts')
-          .select('id, name');
+          .select('id, name')
+          .eq('user_id', user.id);
 
         if (scriptsError) throw scriptsError;
         setScripts(scriptsData || []);

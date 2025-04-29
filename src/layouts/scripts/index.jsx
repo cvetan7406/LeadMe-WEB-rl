@@ -155,17 +155,18 @@ function ScriptsManager() {
 
   const fetchScripts = async () => {
     try {
-      let query = supabase
-        .from('scripts')
-        .select('*');
-      
-      // If user is authenticated, filter scripts by user_id
-      if (user?.id) {
-        query = query.eq('user_id', user.id);
+      if (!user?.id) {
+        console.error('Cannot fetch scripts: User not authenticated');
+        showFormNotification('Authentication required to view scripts', 'error');
+        return;
       }
-      
-      // Order by created_at
-      const { data, error } = await query.order('created_at', { ascending: false });
+
+      // Always filter scripts by user_id to ensure users only see their own scripts
+      const { data, error } = await supabase
+        .from('scripts')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       setScripts(data || []);
