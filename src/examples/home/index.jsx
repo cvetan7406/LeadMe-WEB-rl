@@ -31,9 +31,12 @@ export default function Homepage() {
       <Testimonials />
       <BlogSection />
       <FAQSection />
-      
-      
-      <Subscribe/>
+      <VideoSection />
+      <InteractiveElements />
+      <ContactForm />
+      <Map />
+      <SocialMediaLinks />
+      <Subscribe />
       <Footer />
     </PageLayout>
   );
