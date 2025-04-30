@@ -33,6 +33,25 @@ function ChatAI() {
   const [messages, setMessages] = useState([]);
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(true);
+
+  const suggestions = [
+    {
+      title: "RAG Demo",
+      content: "Show me how you can use RAG to answer questions about my data",
+      icon: "📚"
+    },
+    {
+      title: "Who are you?",
+      content: "Can you introduce yourself and explain your capabilities?",
+      icon: "🤖"
+    },
+    {
+      title: "What can you do?",
+      content: "What are your main features and how can you help me?",
+      icon: "✨"
+    }
+  ];
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -173,6 +192,214 @@ function ChatAI() {
           gap: "1rem",
         }}
       >
+        {showSuggestions && messages.length === 0 && (
+          <VuiBox
+            sx={{
+              display: "flex",
+              flexDirection: "row",
+              gap: "1rem",
+              justifyContent: "center",
+              position: "absolute",
+              bottom: "100px",
+              left: "50%",
+              transform: "translateX(-50%)",
+              width: "90%",
+              padding: "0 1rem"
+            }}
+          >
+            {suggestions.map((suggestion, index) => (
+              <Fade in={true} timeout={500 + (index * 200)} key={index}>
+                <VuiBox
+                  onClick={() => {
+                    const userMessage = {
+                      type: "user",
+                      content: suggestion.content,
+                      timestamp: new Date(),
+                    };
+                    setMessages(prev => [...prev, userMessage]);
+                    setShowSuggestions(false);
+                    setIsLoading(true);
+                    
+                    fetch(`${import.meta.env.VITE_API_URL}/api/chat`, {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                        "X-API-Key": import.meta.env.VITE_AUTO_DIALER_AUTH_TOKEN,
+                        "Accept": "application/json"
+                      },
+                      mode: "cors",
+                      credentials: "omit",
+                      body: JSON.stringify({ message: suggestion.content }),
+                    })
+                    .then(response => {
+                      if (!response.ok) {
+                        return response.json().then(errorData => {
+                          throw new Error(errorData.detail?.message || "Failed to get response");
+                        });
+                      }
+                      return response.json();
+                    })
+                    .then(data => {
+                      const aiMessage = {
+                        type: "ai",
+                        content: data.response,
+                        timestamp: new Date(),
+                      };
+                      setMessages(prev => [...prev, aiMessage]);
+                    })
+                    .catch(error => {
+                      console.error("Chat error:", error);
+                      const errorMessage = {
+                        type: "ai",
+                        content: `Error: ${error.message || "Something went wrong. Please try again."}`,
+                        timestamp: new Date(),
+                        isError: true,
+                      };
+                      setMessages(prev => [...prev, errorMessage]);
+                    })
+                    .finally(() => {
+                      setIsLoading(false);
+                    });
+                  }}
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    textAlign: "center",
+                    gap: "0.5rem",
+                    backgroundColor: "rgba(117, 81, 255, 0.2)",
+                    borderRadius: "1rem",
+                    padding: "1rem",
+                    cursor: "pointer",
+                    transition: "all 0.3s",
+                    flex: 1,
+                    animation: "rainbowShadow 6s linear infinite",
+                    "@keyframes rainbowShadow": {
+                      "0%": {
+                        boxShadow: `
+                          0 4px 20px rgba(0, 0, 0, 0.25),
+                          0 0 20px rgba(255, 0, 0, 0.4),
+                          0 0 30px rgba(255, 0, 0, 0.2)
+                        `
+                      },
+                      "20%": {
+                        boxShadow: `
+                          0 4px 20px rgba(0, 0, 0, 0.25),
+                          0 0 20px rgba(255, 165, 0, 0.4),
+                          0 0 30px rgba(255, 165, 0, 0.2)
+                        `
+                      },
+                      "40%": {
+                        boxShadow: `
+                          0 4px 20px rgba(0, 0, 0, 0.25),
+                          0 0 20px rgba(255, 255, 0, 0.4),
+                          0 0 30px rgba(255, 255, 0, 0.2)
+                        `
+                      },
+                      "60%": {
+                        boxShadow: `
+                          0 4px 20px rgba(0, 0, 0, 0.25),
+                          0 0 20px rgba(0, 255, 0, 0.4),
+                          0 0 30px rgba(0, 255, 0, 0.2)
+                        `
+                      },
+                      "80%": {
+                        boxShadow: `
+                          0 4px 20px rgba(0, 0, 0, 0.25),
+                          0 0 20px rgba(0, 0, 255, 0.4),
+                          0 0 30px rgba(0, 0, 255, 0.2)
+                        `
+                      },
+                      "100%": {
+                        boxShadow: `
+                          0 4px 20px rgba(0, 0, 0, 0.25),
+                          0 0 20px rgba(255, 0, 0, 0.4),
+                          0 0 30px rgba(255, 0, 0, 0.2)
+                        `
+                      }
+                    },
+                    "&:hover": {
+                      backgroundColor: "rgba(117, 81, 255, 0.3)",
+                      transform: "translateY(-5px)",
+                      animation: "rainbowShadowHover 6s linear infinite",
+                      "@keyframes rainbowShadowHover": {
+                        "0%": {
+                          boxShadow: `
+                            0 8px 25px rgba(0, 0, 0, 0.3),
+                            0 0 25px rgba(255, 0, 0, 0.6),
+                            0 0 35px rgba(255, 0, 0, 0.3)
+                          `
+                        },
+                        "20%": {
+                          boxShadow: `
+                            0 8px 25px rgba(0, 0, 0, 0.3),
+                            0 0 25px rgba(255, 165, 0, 0.6),
+                            0 0 35px rgba(255, 165, 0, 0.3)
+                          `
+                        },
+                        "40%": {
+                          boxShadow: `
+                            0 8px 25px rgba(0, 0, 0, 0.3),
+                            0 0 25px rgba(255, 255, 0, 0.6),
+                            0 0 35px rgba(255, 255, 0, 0.3)
+                          `
+                        },
+                        "60%": {
+                          boxShadow: `
+                            0 8px 25px rgba(0, 0, 0, 0.3),
+                            0 0 25px rgba(0, 255, 0, 0.6),
+                            0 0 35px rgba(0, 255, 0, 0.3)
+                          `
+                        },
+                        "80%": {
+                          boxShadow: `
+                            0 8px 25px rgba(0, 0, 0, 0.3),
+                            0 0 25px rgba(0, 0, 255, 0.6),
+                            0 0 35px rgba(0, 0, 255, 0.3)
+                          `
+                        },
+                        "100%": {
+                          boxShadow: `
+                            0 8px 25px rgba(0, 0, 0, 0.3),
+                            0 0 25px rgba(255, 0, 0, 0.6),
+                            0 0 35px rgba(255, 0, 0, 0.3)
+                          `
+                        }
+                      }
+                    }
+                  }}
+                >
+                  <VuiTypography variant="h3" sx={{ lineHeight: 1, mb: 1 }}>
+                    {suggestion.icon}
+                  </VuiTypography>
+                  <VuiTypography
+                    color="white"
+                    variant="button"
+                    fontWeight="medium"
+                    sx={{ mb: 0.5 }}
+                  >
+                    {suggestion.title}
+                  </VuiTypography>
+                  <VuiTypography
+                    color="white"
+                    variant="caption"
+                    sx={{
+                      opacity: 0.7,
+                      maxWidth: "150px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      display: "-webkit-box",
+                      WebkitLineClamp: "2",
+                      WebkitBoxOrient: "vertical"
+                    }}
+                  >
+                    {suggestion.content}
+                  </VuiTypography>
+                </VuiBox>
+              </Fade>
+            ))}
+          </VuiBox>
+        )}
         {messages.map((message, index) => (
           <Fade in={true} key={index} timeout={500}>
             <VuiBox
