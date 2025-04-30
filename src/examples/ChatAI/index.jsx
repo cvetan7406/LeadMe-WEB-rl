@@ -59,23 +59,44 @@ function ChatAI() {
       const authToken = import.meta.env.VITE_AUTO_DIALER_AUTH_TOKEN;
       
       // Using the full URL with /api/chat
-      const response = await fetch(`${apiUrl}/chat`, {
+      const response = await fetch(`${apiUrl}/api/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "X-API-Key": authToken,
+          "Accept": "application/json"
         },
+        mode: "cors",
+        credentials: "omit",  // Don't send credentials for local development
         body: JSON.stringify({ message: inputText }),
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+        const errorData = await response.json().catch(() => ({
+          detail: {
+            message: "Network error occurred",
+            error_type: "NetworkError"
+          }
+        }));
+        
         console.error("Chat API error:", {
           status: response.status,
           statusText: response.statusText,
           error: errorData
         });
-        throw new Error(errorData.detail || "Failed to get response");
+
+        let errorMessage;
+        if (response.status === 429) {
+          errorMessage = "Too many requests. Please wait a moment and try again.";
+        } else if (response.status === 401) {
+          errorMessage = "Authentication failed. Please check your credentials.";
+        } else if (response.status === 400) {
+          errorMessage = "Invalid request. Please check your input.";
+        } else {
+          errorMessage = errorData.detail?.message || "Failed to get response";
+        }
+        
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
