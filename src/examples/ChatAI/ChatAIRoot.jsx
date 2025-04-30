@@ -6,7 +6,7 @@ export default styled(Drawer)(({ theme, ownerState }) => {
   const { openConfigurator } = ownerState;
 
   const { gradients } = palette;
-  const configuratorWidth = 360;
+  const configuratorWidth = 720;
   const { lg } = boxShadows;
   const { pxToRem, linearGradient } = functions;
 
@@ -24,7 +24,7 @@ export default styled(Drawer)(({ theme, ownerState }) => {
   // drawer styles when openConfigurator={false}
   const drawerCloseStyles = () => ({
     left: "initial",
-    right: pxToRem(-350),
+    right: pxToRem(-700),
     transition: transitions.create("all", {
       easing: transitions.easing.sharp,
       duration: transitions.duration.short,
@@ -38,36 +38,47 @@ export default styled(Drawer)(({ theme, ownerState }) => {
       padding: `0 ${pxToRem(10)}`,
       borderRadius: 0,
       boxShadow: lg,
-      overflowY: "hidden", // Changed from auto to hidden since we handle scroll in the chat container
-      backgroundColor: "rgba(0, 0, 0, 0.8)", // Semi-transparent dark background
-      backdropFilter: "blur(8px)", // Add blur effect
+      overflowY: "hidden",
+      backgroundColor: "rgba(0, 0, 0, 0.85)",
+      backdropFilter: "blur(10px)",
+      transition: "all 0.3s ease-in-out",
       ...(openConfigurator ? drawerOpenStyles() : drawerCloseStyles()),
 
-      // Styling for react-chat-elements
-      "& .rce-container-mbox": {
-        backgroundColor: "transparent",
+      // Enhanced chat container styling
+      "& .MuiBox-root": {
+        transition: "all 0.2s ease-in-out",
       },
-      "& .rce-mbox": {
-        backgroundColor: palette.info.main,
-        color: palette.common.white,
-      },
-      "& .rce-mbox-right": {
-        backgroundColor: palette.primary.main,
-      },
-      "& .rce-input": {
-        backgroundColor: "rgba(255, 255, 255, 0.1)",
-        color: palette.common.white,
-        border: "1px solid rgba(255, 255, 255, 0.2)",
-        borderRadius: "10px",
-        "& input": {
-          color: palette.common.white,
-          "&::placeholder": {
-            color: "rgba(255, 255, 255, 0.5)",
-          },
+
+      // Message animations
+      "& .MuiAvatar-root": {
+        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        "&:hover": {
+          transform: "scale(1.1)",
         },
       },
-      "& .rce-mbox-time": {
-        color: "rgba(255, 255, 255, 0.5)",
+
+      // Input field styling
+      "& .MuiTextField-root": {
+        transition: "all 0.2s ease-in-out",
+        "&:hover": {
+          transform: "translateY(-1px)",
+        },
+      },
+
+      // Scrollbar styling
+      "&::-webkit-scrollbar": {
+        width: "6px",
+      },
+      "&::-webkit-scrollbar-track": {
+        background: "rgba(255, 255, 255, 0.1)",
+        borderRadius: "3px",
+      },
+      "&::-webkit-scrollbar-thumb": {
+        background: "rgba(255, 255, 255, 0.2)",
+        borderRadius: "3px",
+        "&:hover": {
+          background: "rgba(255, 255, 255, 0.3)",
+        },
       },
     },
   };

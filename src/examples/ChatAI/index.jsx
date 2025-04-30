@@ -7,6 +7,11 @@ import CloseIcon from "@mui/icons-material/Close";
 import SendIcon from "@mui/icons-material/Send";
 import CircularProgress from "@mui/material/CircularProgress";
 import TextField from "@mui/material/TextField";
+import Avatar from "@mui/material/Avatar";
+import Fade from "@mui/material/Fade";
+import Zoom from "@mui/material/Zoom";
+import SmartToyIcon from "@mui/icons-material/SmartToy";
+import PersonIcon from "@mui/icons-material/Person";
 
 // Vision UI Dashboard React components
 import VuiBox from "../../components/VuiBox";
@@ -136,10 +141,10 @@ function ChatAI() {
         px={3}
       >
         <VuiBox>
-          <VuiTypography color="white" variant="h5" fontWeight="bold">
+          <VuiTypography color="white" variant="h5">
             AI Chat Assistant
           </VuiTypography>
-          <VuiTypography variant="body2" color="white" fontWeight="bold">
+          <VuiTypography variant="body2" color="white">
             Chat with our AI assistant
           </VuiTypography>
         </VuiBox>
@@ -159,7 +164,7 @@ function ChatAI() {
 
       <VuiBox
         sx={{
-          height: "calc(100% - 200px)",
+          height: "calc(100% - 180px)",
           overflowY: "auto",
           backgroundColor: "rgba(0,0,0,0.2)",
           padding: "1rem",
@@ -169,28 +174,72 @@ function ChatAI() {
         }}
       >
         {messages.map((message, index) => (
-          <VuiBox
-            key={index}
-            sx={{
-              alignSelf: message.type === "user" ? "flex-end" : "flex-start",
-              maxWidth: "80%",
-              backgroundColor: message.isError ? "error.main" : message.type === "user" ? "info.main" : "primary.main",
-              borderRadius: "1rem",
-              padding: "0.75rem 1rem",
-              position: "relative",
-            }}
-          >
-            <VuiTypography color="white" variant="button" sx={{ whiteSpace: 'pre-wrap' }}>
-              {message.content}
-            </VuiTypography>
-            <VuiTypography
-              variant="caption"
-              color="white"
-              sx={{ opacity: 0.7, display: "block", mt: 0.5 }}
+          <Fade in={true} key={index} timeout={500}>
+            <VuiBox
+              sx={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: "1rem",
+                flexDirection: message.type === "user" ? "row-reverse" : "row",
+                mb: 2,
+                maxWidth: "100%",
+              }}
             >
-              {message.timestamp.toLocaleTimeString()}
-            </VuiTypography>
-          </VuiBox>
+              <Zoom in={true} timeout={700}>
+                <Avatar
+                  sx={{
+                    bgcolor: message.type === "user" ? "info.main" : "primary.main",
+                    width: 32,
+                    height: 32,
+                  }}
+                >
+                  {message.type === "user" ? <PersonIcon /> : <SmartToyIcon />}
+                </Avatar>
+              </Zoom>
+              <VuiBox
+                sx={{
+                  maxWidth: "85%",
+                  width: "fit-content",
+                  backgroundColor: message.isError ? "error.main" : message.type === "user" ? "info.main" : "primary.main",
+                  borderRadius: "1rem",
+                  padding: "0.75rem 1rem",
+                  position: "relative",
+                  overflow: "hidden",
+                  "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    top: "12px",
+                    [message.type === "user" ? "right" : "left"]: "-8px",
+                    width: "0",
+                    height: "0",
+                    borderTop: "8px solid transparent",
+                    borderBottom: "8px solid transparent",
+                    [message.type === "user" ? "borderLeft" : "borderRight"]: `8px solid ${message.isError ? "#f44336" : message.type === "user" ? "#1a73e8" : "#7551FF"}`,
+                  }
+                }}
+              >
+                <VuiTypography
+                  color="white"
+                  variant="body2"
+                  sx={{
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word',
+                    overflowWrap: 'break-word',
+                    maxWidth: '100%'
+                  }}
+                >
+                  {message.content}
+                </VuiTypography>
+                <VuiTypography
+                  variant="caption"
+                  color="white"
+                  sx={{ opacity: 0.7, display: "block", mt: 0.5 }}
+                >
+                  {message.timestamp.toLocaleTimeString()}
+                </VuiTypography>
+              </VuiBox>
+            </VuiBox>
+          </Fade>
         ))}
         <div ref={messagesEndRef} />
       </VuiBox>
@@ -201,10 +250,12 @@ function ChatAI() {
           bottom: 0,
           left: 0,
           right: 0,
-          padding: "1rem",
+          padding: "1.5rem",
           backgroundColor: "black",
           display: "flex",
-          gap: "0.5rem",
+          gap: "1rem",
+          alignItems: "center",
+          borderTop: "1px solid rgba(255, 255, 255, 0.1)",
         }}
       >
         <TextField
@@ -222,6 +273,8 @@ function ChatAI() {
           maxRows={3}
           disabled={isLoading}
           sx={{
+            width: "85%",
+            margin: "0 auto",
             "& .MuiOutlinedInput-root": {
               color: "white",
               backgroundColor: "rgba(255, 255, 255, 0.1)",
@@ -243,22 +296,27 @@ function ChatAI() {
             },
           }}
         />
-        <VuiButton
-          color="info"
-          variant="contained"
-          onClick={handleSendMessage}
-          disabled={isLoading || !inputText.trim()}
-          sx={{
-            minWidth: "auto",
-            padding: "0.5rem",
-          }}
-        >
-          {isLoading ? (
-            <CircularProgress size={24} color="inherit" />
-          ) : (
+        <Zoom in={!isLoading}>
+          <VuiButton
+            color="info"
+            variant="contained"
+            onClick={handleSendMessage}
+            disabled={isLoading || !inputText.trim()}
+            sx={{
+              minWidth: "auto",
+              padding: "0.5rem",
+              transition: "transform 0.2s",
+              "&:hover": {
+                transform: "scale(1.05)",
+              },
+            }}
+          >
             <SendIcon />
-          )}
-        </VuiButton>
+          </VuiButton>
+        </Zoom>
+        <Zoom in={isLoading}>
+          <CircularProgress size={24} sx={{ color: "info.main" }} />
+        </Zoom>
       </VuiBox>
     </ChatAIRoot>
   );

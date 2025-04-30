@@ -108,11 +108,14 @@ function Dashboard() {
     const fetchDashboardStats = async () => {
       try {
         setLoading(true);
+        const apiKey = import.meta.env.VITE_AUTO_DIALER_AUTH_TOKEN;
+        if (!apiKey) {
+          throw new Error('API key not found in environment variables');
+        }
+        
         const response = await axios.get('/api/dashboard/stats', {
           headers: {
-            // In Vite, environment variables are accessed using import.meta.env
-            // and must be prefixed with VITE_ instead of REACT_APP_
-            'X-API-Key': import.meta.env.VITE_API_KEY || 'your-api-key'
+            'X-API-Key': apiKey
           }
         });
         
