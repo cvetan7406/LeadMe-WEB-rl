@@ -17,12 +17,18 @@
 */
 
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, Icon } from "@mui/material";
 import welcome from "../../../../assets/images/welcome-profile.png";
 import VuiTypography from "../../../../components/VuiTypography/index";
 import VuiBox from "../../../../components/VuiBox/index";
 
 const Welcome = ({ email = 'Not available', role = 'user' }) => {
+  const navigate = useNavigate();
+
+  const handleProfileSettings = () => {
+    navigate('/profile/settings');
+  };
   return (
     <Card
       sx={({ breakpoints }) => ({
@@ -46,12 +52,15 @@ const Welcome = ({ email = 'Not available', role = 'user' }) => {
         </VuiBox>
         <VuiBox justifySelf="flex-end">
           <VuiTypography
-            component="a"
-            href="#"
+            component="button"
             variant="button"
             color="white"
             fontWeight="regular"
+            onClick={handleProfileSettings}
             sx={{
+              background: 'none',
+              border: 'none',
+              padding: 0,
               mr: "5px",
               display: "inline-flex",
               alignItems: "center",

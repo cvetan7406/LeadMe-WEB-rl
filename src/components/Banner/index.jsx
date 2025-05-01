@@ -1,8 +1,14 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import VuiTypography from '../VuiTypography';
 import VuiButton from '../VuiButton';
 
 function VideoBanner() {
+  const navigate = useNavigate();
+
+  const handleEarlyAccess = () => {
+    navigate('/authentication/sign-in');
+  };
   return (
     <>
       <style>{`
@@ -96,10 +102,14 @@ function VideoBanner() {
           }}>
             Already have access? Click below.
           </VuiTypography>
-          <VuiButton color="warning" href="/authentication/sign-in" style={{
-            marginTop: '40px',
-            
-          }}>
+          <VuiButton
+            color="warning"
+            onClick={handleEarlyAccess}
+            style={{
+              marginTop: '40px',
+              cursor: 'pointer'
+            }}
+          >
             EARLY ACCESS
           </VuiButton>
         </div>

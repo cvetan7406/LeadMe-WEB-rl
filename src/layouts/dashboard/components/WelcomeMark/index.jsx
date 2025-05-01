@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, Icon } from "@mui/material";
 import VuiBox from "../../../../components/VuiBox";
 import VuiTypography from "../../../../components/VuiTypography";
@@ -8,7 +9,12 @@ import gif from "../../../../assets/images/cardimgfree.png";
 
 const WelcomeMark = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [userName, setUserName] = useState("");
+
+  const handleStartRecording = () => {
+    navigate('/create/campaign');
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -116,12 +122,15 @@ const WelcomeMark = () => {
           </VuiTypography>
         </VuiBox>
         <VuiTypography
-          component="a"
-          href="#"
+          component="button"
           variant="button"
           color="white"
           fontWeight="regular"
+          onClick={handleStartRecording}
           sx={{
+            background: 'none',
+            border: 'none',
+            padding: 0,
             mr: "5px",
             display: "inline-flex",
             alignItems: "center",

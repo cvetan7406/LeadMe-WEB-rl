@@ -18,6 +18,7 @@
 
 // @mui material components
 import Grid from "@mui/material/Grid";
+import { useNavigate } from "react-router-dom";
 
 // @mui icons
 import FacebookIcon from "@mui/icons-material/Facebook";
@@ -31,6 +32,11 @@ import VuiBox from "../../../../components/VuiBox";
 import VuiTypography from "../../../../components/VuiTypography";
 
 function Footer() {
+  const navigate = useNavigate();
+
+  const handleNavigation = (path) => {
+    navigate(path);
+  };
   return (
     <VuiBox
       component="footer"
@@ -55,17 +61,50 @@ function Footer() {
         <Grid item xs={10}>
           <VuiBox display="flex" justifyContent="center" flexWrap="wrap" mb={3}>
             <VuiBox mr={{ xs: "20px", lg: "46px" }}>
-              <VuiTypography component="a" href="#" variant="body2" color="text">
+              <VuiTypography
+                component="button"
+                variant="body2"
+                color="text"
+                onClick={() => handleNavigation('/marketplace')}
+                sx={{
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  cursor: 'pointer'
+                }}
+              >
                 Marketplace
               </VuiTypography>
             </VuiBox>
             <VuiBox mr={{ xs: "20px", lg: "46px" }}>
-              <VuiTypography component="a" href="#" variant="body2" color="text">
+              <VuiTypography
+                component="button"
+                variant="body2"
+                color="text"
+                onClick={() => handleNavigation('/blog')}
+                sx={{
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  cursor: 'pointer'
+                }}
+              >
                 Blog
               </VuiTypography>
             </VuiBox>
             <VuiBox>
-              <VuiTypography component="a" href="#" variant="body2" color="text">
+              <VuiTypography
+                component="button"
+                variant="body2"
+                color="text"
+                onClick={() => handleNavigation('/license')}
+                sx={{
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  cursor: 'pointer'
+                }}
+              >
                 License
               </VuiTypography>
             </VuiBox>

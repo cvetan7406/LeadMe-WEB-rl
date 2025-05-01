@@ -1,10 +1,15 @@
 import React from "react";
-
+import { useNavigate } from "react-router-dom";
 import { Card, Icon } from "@mui/material";
 import VuiBox from "../../../../components/VuiBox";
 import VuiTypography from "../../../../components/VuiTypography";
 
 const WelcomeMark = () => {
+  const navigate = useNavigate();
+
+  const handleRegistration = () => {
+    navigate('/authentication/sign-up');
+  };
   return (
     <Card sx={{ height: "340px" }}>
       <VuiBox height="100%" display="flex" flexDirection="column" justifyContent="space-between">
@@ -21,12 +26,15 @@ const WelcomeMark = () => {
           </VuiTypography>
         </VuiBox>
         <VuiTypography
-          component="a"
-          href="#"
+          component="button"
           variant="button"
           color="white"
           fontWeight="regular"
+          onClick={handleRegistration}
           sx={{
+            background: 'none',
+            border: 'none',
+            padding: 0,
             mr: "5px",
             display: "inline-flex",
             alignItems: "center",
