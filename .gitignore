@@ -12,7 +12,7 @@
 
 # Testing
 /coverage
-
+package-lock.json
 # Production
 /build
 /dist
