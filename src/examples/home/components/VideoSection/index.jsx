@@ -124,7 +124,7 @@ export default function VideoSection() {
               controls={isPlaying}
             >
               <source 
-                src="https://your-video-url.mp4" 
+                src="https://www.youtube.com/watch?v=t7ReU_Pz4bk" 
                 type="video/mp4"
               />
               Your browser does not support the video tag.
