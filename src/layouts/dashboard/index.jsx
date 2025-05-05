@@ -253,6 +253,7 @@ function Dashboard() {
                 count={dashboardStats.calls_success_display}
                 percentage={{ color: "success", text: ` ${dashboardStats.success_rate}%` }}
                 icon={{ color: "info", component: <IoWallet size="22px" color="white" /> }}
+                tooltipContent={`Successfully completed calls: ${dashboardStats.calls_success_display} with a success rate of ${dashboardStats.success_rate}%`}
               />
             </Grid>
             <Grid item xs={12} sm={6} md={true} sx={{ flex: 1 }}>
@@ -261,6 +262,7 @@ function Dashboard() {
                 count={`${dashboardStats.avg_call_duration} sec`}
                 percentage={{ color: "success", text: "" }}
                 icon={{ color: "info", component: <IoGlobe size="22px" color="white" /> }}
+                tooltipContent={`Average duration of all calls: ${dashboardStats.avg_call_duration} seconds`}
               />
             </Grid>
             <Grid item xs={12} sm={6} md={true} sx={{ flex: 1 }}>
@@ -269,6 +271,7 @@ function Dashboard() {
                 count={leadCount}
                 percentage={{ color: "success", text: "" }}
                 icon={{ color: "info", component: <IoDocumentText size="22px" color="white" /> }}
+                tooltipContent={`Total number of leads in the system: ${leadCount}`}
               />
             </Grid>
             <Grid item xs={12} sm={6} md={true} sx={{ flex: 1 }}>
@@ -278,6 +281,7 @@ function Dashboard() {
                 percentage={{ color: "info", text: "" }}
                 icon={{ color: "info", component: <FaShoppingCart size="20px" color="white" /> }}
                 countStyle={{ fontSize: "2rem" }}
+                tooltipContent="Current local time in your timezone"
               />
             </Grid>
             <Grid item xs={12} sm={6} md={true} sx={{ flex: 1 }}>
@@ -286,6 +290,7 @@ function Dashboard() {
                 count={dashboardStats.calls_cancelled_display}
                 percentage={{ color: "error", text: ` ${dashboardStats.cancelled_rate}%` }}
                 icon={{ color: "info", component: <IoWallet size="22px" color="white" /> }}
+                tooltipContent={`Cancelled calls: ${dashboardStats.calls_cancelled_display} with a cancellation rate of ${dashboardStats.cancelled_rate}%`}
               />
             </Grid>
             <Grid item xs={12} sm={6} md={true} sx={{ flex: 1 }}>
@@ -297,6 +302,7 @@ function Dashboard() {
                   text: `${dashboardStats.user_percent_change >= 0 ? '+' : ''}${dashboardStats.user_percent_change}%`
                 }}
                 icon={{ color: "info", component: <IoGlobe size="22px" color="white" /> }}
+                tooltipContent={`Active users today: ${dashboardStats.today_users} (${dashboardStats.user_percent_change >= 0 ? '+' : ''}${dashboardStats.user_percent_change}% change)`}
               />
             </Grid>
             <Grid item xs={12} sm={6} md={true} sx={{ flex: 1 }}>
@@ -305,6 +311,7 @@ function Dashboard() {
                 count={dashboardStats.new_clients}
                 percentage={{ color: "success", text: `+${dashboardStats.new_clients_percent}%` }}
                 icon={{ color: "info", component: <IoDocumentText size="22px" color="white" /> }}
+                tooltipContent={`New clients added: ${dashboardStats.new_clients} (+${dashboardStats.new_clients_percent}% growth)`}
               />
             </Grid>
             <Grid item xs={12} sm={6} md={true} sx={{ flex: 1 }}>
@@ -314,6 +321,7 @@ function Dashboard() {
                 percentage={{ color: "info", text: "" }}
                 icon={{ color: "info", component: <IoIosRocket size="20px" color="white" /> }}
                 countStyle={{ fontSize: "2rem" }}
+                tooltipContent="Current local date in your timezone"
               />
             </Grid>
           </Grid>

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Card from "@mui/material/Card";
+import { Tooltip } from "@mui/material";
 import VuiBox from "../../../../components/VuiBox";
 import VuiTypography from "../../../../components/VuiTypography";
 import { supabase } from '../../../../config/supabaseClient';
@@ -39,11 +40,23 @@ function OrdersOverview() {
   const getIconForTime = (scheduledTime) => {
     const hour = new Date(scheduledTime).getHours();
     if (hour >= 6 && hour < 18) {
-      return <WbSunnyIcon style={{ color: palette.warning.main }} />; // Daytime
+      return (
+        <Tooltip title="Daytime Campaign (6 AM - 6 PM)" placement="top">
+          <WbSunnyIcon style={{ color: palette.warning.main }} />
+        </Tooltip>
+      );
     } else if (hour >= 18 && hour < 22) {
-      return <Brightness3Icon style={{ color: palette.info.main }} />; // Evening
+      return (
+        <Tooltip title="Evening Campaign (6 PM - 10 PM)" placement="top">
+          <Brightness3Icon style={{ color: palette.info.main }} />
+        </Tooltip>
+      );
     } else {
-      return <NightsStayIcon style={{ color: palette.primary.main }} />; // Nighttime
+      return (
+        <Tooltip title="Night Campaign (10 PM - 6 AM)" placement="top">
+          <NightsStayIcon style={{ color: palette.primary.main }} />
+        </Tooltip>
+      );
     }
   };
 
@@ -101,36 +114,45 @@ function OrdersOverview() {
           {campaigns.map((campaign) => (
             <VuiBox key={campaign.id} mb={2}>
               <TimelineItem
-                
                 title={campaign.name}
                 dateTime={`Scheduled at: ${new Date(campaign.start_time).toLocaleString()}`}
                 description={campaign.description}
-                status={campaign.status}
+                status={
+                  <Tooltip title={`Campaign Status: ${campaign.status.charAt(0).toUpperCase() + campaign.status.slice(1)}`} placement="top">
+                    <span>{campaign.status}</span>
+                  </Tooltip>
+                }
               />
               <VuiBox display="flex" justifyContent="flex-start" mt={1}>
-                <Button
-                  variant="outlined"
-                  color="info"
-                  onClick={() => handleDisable(campaign.id)}
-                  style={{ marginRight: '8px' }}
-                >
-                  <BlockIcon />
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  onClick={() => handleEdit(campaign.id)}
-                  style={{ marginRight: '8px' }}
-                >
-                  <EditIcon />
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="error"
-                  onClick={() => handleDelete(campaign.id)}
-                >
-                  <DeleteIcon />
-                </Button>
+                <Tooltip title="Disable Campaign" placement="top">
+                  <Button
+                    variant="outlined"
+                    color="info"
+                    onClick={() => handleDisable(campaign.id)}
+                    style={{ marginRight: '8px' }}
+                  >
+                    <BlockIcon />
+                  </Button>
+                </Tooltip>
+                <Tooltip title="Edit Campaign" placement="top">
+                  <Button
+                    variant="outlined"
+                    color="primary"
+                    onClick={() => handleEdit(campaign.id)}
+                    style={{ marginRight: '8px' }}
+                  >
+                    <EditIcon />
+                  </Button>
+                </Tooltip>
+                <Tooltip title="Delete Campaign" placement="top">
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    onClick={() => handleDelete(campaign.id)}
+                  >
+                    <DeleteIcon />
+                  </Button>
+                </Tooltip>
               </VuiBox>
             </VuiBox>
           ))}

@@ -10,9 +10,17 @@ export function NotificationProvider({ children }) {
     const newNotification = {
       id: Date.now(),
       timestamp: new Date(),
+      duration: notification.duration || 5000, // Default 5 seconds
       ...notification,
     };
     setNotifications((prev) => [newNotification, ...prev]);
+
+    // Auto dismiss after duration
+    if (newNotification.duration !== 0) {
+      setTimeout(() => {
+        removeNotification(newNotification.id);
+      }, newNotification.duration);
+    }
   };
 
   const removeNotification = (id) => {

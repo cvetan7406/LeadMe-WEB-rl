@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Card, Grid, Icon, Skeleton } from "@mui/material";
+import { Card, Grid, Icon, Skeleton, Tooltip } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import VuiBox from "../../../components/VuiBox";
 import VuiTypography from "../../../components/VuiTypography";
 import VuiProgress from "../../../components/VuiProgress";
@@ -14,51 +15,83 @@ import PauseCircleIcon from '@mui/icons-material/PauseCircle';
 import MicIcon from '@mui/icons-material/Mic';
 
 // Stat card component
-function StatCard({ title, value, icon, color, subtitle, progress }) {
+function StatCard({ title, value, icon, color, subtitle, progress, tooltipContent, linkTo }) {
+  const navigate = useNavigate();
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleClick = () => {
+    if (linkTo) {
+      navigate(linkTo);
+    }
+  };
+
   return (
-    <Card>
-      <VuiBox p={2}>
-        <Grid container spacing={1}>
-          <Grid item xs={8}>
-            <VuiBox>
-              <VuiTypography variant="button" color="text" fontWeight="medium">
-                {title}
-              </VuiTypography>
-              <VuiBox display="flex" alignItems="center">
-                <VuiTypography variant="h4" fontWeight="bold" color="white">
-                  {value}
-                </VuiTypography>
-                {subtitle && (
-                  <VuiTypography variant="caption" color="text" fontWeight="medium" ml={1}>
-                    {subtitle}
-                  </VuiTypography>
-                )}
-              </VuiBox>
-            </VuiBox>
-          </Grid>
-          <Grid item xs={4}>
-            <VuiBox
-              display="flex"
-              justifyContent="center"
-              alignItems="center"
-              width="4.5rem"
-              height="4.5rem"
-              borderRadius="xl"
-              bgcolor={`${color}.focus`}
-              color="white"
-              shadow="md"
-              ml="auto"
-            >
-              {icon}
-            </VuiBox>
-          </Grid>
-        </Grid>
-        {progress !== undefined && (
-          <VuiBox mt={2}>
-            <VuiProgress value={progress} color={color} sx={{ background: "#2D2E5F" }} label={false} />
+    <Card
+      sx={{
+        cursor: linkTo ? 'pointer' : 'default',
+        transition: 'transform 0.2s',
+        '&:hover': {
+          transform: linkTo ? 'scale(1.02)' : 'none',
+        }
+      }}
+      onClick={handleClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      <Tooltip
+        open={isHovered && tooltipContent}
+        title={
+          <VuiBox p={1}>
+            <VuiTypography variant="button" color="white">
+              {tooltipContent}
+            </VuiTypography>
           </VuiBox>
-        )}
-      </VuiBox>
+        }
+        placement="top"
+      >
+        <VuiBox p={2}>
+          <Grid container spacing={1}>
+            <Grid item xs={8}>
+              <VuiBox>
+                <VuiTypography variant="button" color="text" fontWeight="medium">
+                  {title}
+                </VuiTypography>
+                <VuiBox display="flex" alignItems="center">
+                  <VuiTypography variant="h4" fontWeight="bold" color="white">
+                    {value}
+                  </VuiTypography>
+                  {subtitle && (
+                    <VuiTypography variant="caption" color="text" fontWeight="medium" ml={1}>
+                      {subtitle}
+                    </VuiTypography>
+                  )}
+                </VuiBox>
+              </VuiBox>
+            </Grid>
+            <Grid item xs={4}>
+              <VuiBox
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+                width="4.5rem"
+                height="4.5rem"
+                borderRadius="xl"
+                bgcolor={`${color}.focus`}
+                color="white"
+                shadow="md"
+                ml="auto"
+              >
+                {icon}
+              </VuiBox>
+            </Grid>
+          </Grid>
+          {progress !== undefined && (
+            <VuiBox mt={2}>
+              <VuiProgress value={progress} color={color} sx={{ background: "#2D2E5F" }} label={false} />
+            </VuiBox>
+          )}
+        </VuiBox>
+      </Tooltip>
     </Card>
   );
 }
@@ -87,6 +120,8 @@ function CampaignStats() {
               value={stats.totalCampaigns}
               icon={<AssessmentIcon fontSize="large" />}
               color="info"
+              tooltipContent={`View all ${stats.totalCampaigns} campaigns across all statuses`}
+              linkTo="/tables/PendingCapaign"
             />
           )}
         </Grid>
@@ -102,6 +137,8 @@ function CampaignStats() {
               color="success"
               subtitle={`${Math.round((stats.statusCounts.running / stats.totalCampaigns) * 100)}% of total`}
               progress={Math.round((stats.statusCounts.running / stats.totalCampaigns) * 100)}
+              tooltipContent={`${stats.statusCounts.running} campaigns currently running with active calls`}
+              linkTo="/tables/custom?status=running"
             />
           )}
         </Grid>
@@ -115,6 +152,8 @@ function CampaignStats() {
               value={stats.statusCounts.scheduled}
               icon={<PendingActionsIcon fontSize="large" />}
               color="warning"
+              tooltipContent={`${stats.statusCounts.scheduled} campaigns scheduled for future execution`}
+              linkTo="/tables/custom?status=scheduled"
             />
           )}
         </Grid>
@@ -128,6 +167,8 @@ function CampaignStats() {
               value={stats.statusCounts.completed}
               icon={<CheckCircleIcon fontSize="large" />}
               color="success"
+              tooltipContent={`${stats.statusCounts.completed} campaigns successfully completed`}
+              linkTo="/tables/custom?status=completed"
             />
           )}
         </Grid>
@@ -142,6 +183,8 @@ function CampaignStats() {
               value={stats.totalCalls}
               icon={<PhoneIcon fontSize="large" />}
               color="primary"
+              tooltipContent={`Total of ${stats.totalCalls} calls made across all campaigns`}
+              linkTo="/logs"
             />
           )}
         </Grid>
@@ -157,6 +200,8 @@ function CampaignStats() {
               color="success"
               subtitle={`${Math.round((stats.successfulCalls / stats.totalCalls) * 100)}% success rate`}
               progress={Math.round((stats.successfulCalls / stats.totalCalls) * 100)}
+              tooltipContent={`${stats.successfulCalls} successful calls out of ${stats.totalCalls} total calls`}
+              linkTo="/logs?status=completed"
             />
           )}
         </Grid>
@@ -170,6 +215,8 @@ function CampaignStats() {
               value={stats.totalRecordings}
               icon={<MicIcon fontSize="large" />}
               color="info"
+              tooltipContent={`${stats.totalRecordings} recorded calls available for playback`}
+              linkTo="/tables/components/CallRecordings"
             />
           )}
         </Grid>

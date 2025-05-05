@@ -23,17 +23,23 @@ import PropTypes from "prop-types";
 import Card from "@mui/material/Card";
 import Grid from "@mui/material/Grid";
 import Icon from "@mui/material/Icon";
+import Tooltip from "@mui/material/Tooltip";
 
 // Vision UI Dashboard React components
 import VuiBox from "../../../../components/VuiBox";
 import VuiTypography from "../../../../components/VuiTypography";
 import colors from "../../../../assets/theme/base/colors";
 
-function MiniStatisticsCard({ bgColor, title, count, percentage, icon, direction }) {
+function MiniStatisticsCard({ bgColor, title, count, percentage, icon, direction, tooltipContent }) {
   const { info } = colors;
 
   return (
-    <Card sx={{
+    <Tooltip
+      title={tooltipContent || ""}
+      placement="top"
+      arrow
+    >
+      <Card sx={{
       padding: "17px",
       // Set minimum height of 130px for laptops and larger devices (md and up)
       // Keep height dynamic for mobile devices (xs and sm)
@@ -126,6 +132,7 @@ function MiniStatisticsCard({ bgColor, title, count, percentage, icon, direction
         </VuiBox>
       </VuiBox>
     </Card>
+    </Tooltip>
   );
 }
 
@@ -141,6 +148,7 @@ MiniStatisticsCard.defaultProps = {
     text: "",
   },
   direction: "right",
+  tooltipContent: "",
 };
 
 // Typechecking props for the MiniStatisticsCard
@@ -178,6 +186,7 @@ MiniStatisticsCard.propTypes = {
     component: PropTypes.node.isRequired,
   }).isRequired,
   direction: PropTypes.oneOf(["right", "left"]),
+  tooltipContent: PropTypes.string,
 };
 
 export default MiniStatisticsCard;

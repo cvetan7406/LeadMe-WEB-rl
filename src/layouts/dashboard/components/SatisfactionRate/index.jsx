@@ -1,6 +1,5 @@
 import React from 'react';
-
-import { Card } from '@mui/material';
+import { Card, Tooltip } from '@mui/material';
 import VuiBox from '../../../../components/VuiBox';
 import VuiTypography from '../../../../components/VuiTypography';
 import { IoHappy } from 'react-icons/io5';
@@ -22,34 +21,36 @@ const SatisfactionRate = () => {
 					From all projects
 				</VuiTypography>
 				<VuiBox sx={{ alignSelf: 'center', justifySelf: 'center', zIndex: '-1' }}>
-					<VuiBox sx={{ position: 'relative', display: 'inline-flex' }}>
-						<CircularProgress variant='determinate' value={60} size={170} color='info' />
-						<VuiBox
-							sx={{
-								top: 0,
-								left: 0,
-								bottom: 0,
-								right: 0,
-								position: 'absolute',
-								display: 'flex',
-								alignItems: 'center',
-								justifyContent: 'center'
-							}}>
+					<Tooltip title="Overall satisfaction rate based on user feedback" placement="top">
+						<VuiBox sx={{ position: 'relative', display: 'inline-flex' }}>
+							<CircularProgress variant='determinate' value={60} size={170} color='info' />
 							<VuiBox
 								sx={{
-									background: info.main,
-									transform: 'translateY(-50%)',
-									width: '50px',
-									height: '50px',
-									borderRadius: '50%',
+									top: 0,
+									left: 0,
+									bottom: 0,
+									right: 0,
+									position: 'absolute',
 									display: 'flex',
-									justifyContent: 'center',
-									alignItems: 'center'
+									alignItems: 'center',
+									justifyContent: 'center'
 								}}>
-								<IoHappy size='30px' color='#fff' />
+								<VuiBox
+									sx={{
+										background: info.main,
+										transform: 'translateY(-50%)',
+										width: '50px',
+										height: '50px',
+										borderRadius: '50%',
+										display: 'flex',
+										justifyContent: 'center',
+										alignItems: 'center'
+									}}>
+									<IoHappy size='30px' color='#fff' />
+								</VuiBox>
 							</VuiBox>
 						</VuiBox>
-					</VuiBox>
+					</Tooltip>
 				</VuiBox>
 				<VuiBox
 					sx={({ breakpoints }) => ({
@@ -65,25 +66,31 @@ const SatisfactionRate = () => {
 						transform: 'translateY(-90%)',
 						zIndex: '1000'
 					})}>
-					<VuiTypography color='text' variant='caption' display='inline-block' fontWeight='regular'>
-						0%
-					</VuiTypography>
-					<VuiBox
-						flexDirection='column'
-						display='flex'
-						justifyContent='center'
-						alignItems='center'
-						sx={{ minWidth: '80px' }}>
-						<VuiTypography color='white' variant='h3'>
-							95%
+					<Tooltip title="Minimum satisfaction threshold" placement="bottom">
+						<VuiTypography color='text' variant='caption' display='inline-block' fontWeight='regular'>
+							0%
 						</VuiTypography>
-						<VuiTypography color='text' variant='caption' fontWeight='regular'>
-							Based on likes
+					</Tooltip>
+					<Tooltip title="Current satisfaction rate based on user likes and feedback" placement="bottom">
+						<VuiBox
+							flexDirection='column'
+							display='flex'
+							justifyContent='center'
+							alignItems='center'
+							sx={{ minWidth: '80px' }}>
+							<VuiTypography color='white' variant='h3'>
+								95%
+							</VuiTypography>
+							<VuiTypography color='text' variant='caption' fontWeight='regular'>
+								Based on likes
+							</VuiTypography>
+						</VuiBox>
+					</Tooltip>
+					<Tooltip title="Maximum satisfaction target" placement="bottom">
+						<VuiTypography color='text' variant='caption' display='inline-block' fontWeight='regular'>
+							100%
 						</VuiTypography>
-					</VuiBox>
-					<VuiTypography color='text' variant='caption' display='inline-block' fontWeight='regular'>
-						100%
-					</VuiTypography>
+					</Tooltip>
 				</VuiBox>
 			</VuiBox>
 		</Card>

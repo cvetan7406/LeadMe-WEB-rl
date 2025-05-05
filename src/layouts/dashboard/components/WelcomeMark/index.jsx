@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, Icon } from "@mui/material";
+import { Card, Icon, Tooltip } from "@mui/material";
 import VuiBox from "../../../../components/VuiBox";
 import VuiTypography from "../../../../components/VuiTypography";
 import { useAuth } from "../../../../context/AuthContext";
@@ -121,13 +121,14 @@ const WelcomeMark = () => {
             <br /> Ask me anything.
           </VuiTypography>
         </VuiBox>
-        <VuiTypography
-          component="button"
-          variant="button"
-          color="white"
-          fontWeight="regular"
-          onClick={handleStartRecording}
-          sx={{
+        <Tooltip title="Create a new campaign and start recording" placement="top">
+          <VuiTypography
+            component="button"
+            variant="button"
+            color="white"
+            fontWeight="regular"
+            onClick={handleStartRecording}
+            sx={{
             background: 'none',
             border: 'none',
             padding: 0,
@@ -149,7 +150,8 @@ const WelcomeMark = () => {
         >
           Tap to record
           <Icon sx={{ fontWeight: "bold", ml: "5px" }}>arrow_forward</Icon>
-        </VuiTypography>
+          </VuiTypography>
+        </Tooltip>
       </VuiBox>
     </Card>
   );

@@ -56,6 +56,7 @@ import { useVisionUIController, setMiniSidenav, setOpenConfigurator } from "./co
 import { NotificationProvider } from "./context/NotificationContext";
 import { AuthProvider } from "./context/AuthContext";
 import { FilterProvider } from "./context/FilterContext";
+import NotificationToast from "./components/NotificationToast";
 
 export default function App() {
   const [controller, dispatch] = useVisionUIController();
@@ -212,6 +213,7 @@ export default function App() {
     <AuthProvider>
       <NotificationProvider>
         <FilterProvider>
+          <NotificationToast />
           {renderApp()}
         </FilterProvider>
       </NotificationProvider>
