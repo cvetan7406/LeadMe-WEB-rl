@@ -159,8 +159,8 @@ function ManageContacts() {
   return (
     <DashboardLayout>
       <DashboardNavbar />
-      <VuiBox py={3} px={3}>
-        <Grid container spacing={3}>
+      <VuiBox py={3} px={3} display="flex" justifyContent="center">
+        <Grid container spacing={3} maxWidth="1400px">
           <Grid item xs={12}>
             <Card
               sx={{
@@ -171,7 +171,7 @@ function ManageContacts() {
             >
               <VuiBox display="flex" justifyContent="space-between" alignItems="center" mb="22px" p={3}>
                 <VuiBox>
-                  <VuiTypography color="white" variant="lg" mb="6px" gutterBottom>
+                  <VuiTypography color="white" variant="lg" mb="6px" gutterBottom fontSize="18.19px">
                     Uploaded Leads
                   </VuiTypography>
                   <VuiBox display="flex" alignItems="center" lineHeight={0}>
@@ -439,7 +439,7 @@ function ManageContacts() {
         }}
       >
         <DialogTitle>
-          <VuiTypography variant="h6" color="white">
+          <VuiTypography variant="h6" component="div" color="white">
             Edit {selectedIds.length} Selected Contacts
           </VuiTypography>
         </DialogTitle>

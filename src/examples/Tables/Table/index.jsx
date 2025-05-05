@@ -16,125 +16,181 @@
 
 */
 
-import React, { useMemo } from 'react';
 import { Table as MuiTable, TableBody, TableContainer, TableRow, IconButton, Checkbox } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import VuiBox from "../../../components/VuiBox";
 import VuiTypography from "../../../components/VuiTypography";
 import PropTypes from "prop-types";
-import { v4 as uuidv4 } from "uuid";
 
 function Table({ columns, rows, onEdit, onDelete, onBulkSelect, selectedRows = [] }) {
-  // Add checkbox column to header
-  const renderColumns = [
-    <VuiBox
-      key="select-all"
-      component="th"
-      textAlign="center"
-      fontSize="small"
-      fontWeight="bold"
-      color="text"
-      opacity={0.7}
-      pl={1}
-      pr={1}
-      sx={{ borderBottom: '1px solid #444', padding: '8px' }}
-    >
-      <Checkbox
-        size="medium"
-        sx={{
-          color: 'white',
-          '&.Mui-checked': { color: 'info.main' },
-          '& .MuiSvgIcon-root': { fontSize: '24px' },
-          padding: 0
-        }}
-        onChange={(e) => {
-          // Select or deselect all rows
-          if (e.target.checked) {
-            onBulkSelect(rows.map(row => row.id));
-          } else {
-            onBulkSelect([]);
-          }
-        }}
-        checked={selectedRows.length > 0 && selectedRows.length === rows.length}
-        indeterminate={selectedRows.length > 0 && selectedRows.length < rows.length}
-      />
-    </VuiBox>,
-    ...columns.map(({ name, align }, key) => {
-      let pl = key === 0 ? 3 : 1;
-      let pr = key === columns.length - 1 ? 3 : 1;
+  const renderColumns = columns.map(({ name, align, label, accessor, width, renderHeader }, key) => {
+    let pl = key === 0 ? 3 : 1;
+    let pr = key === columns.length - 1 ? 3 : 1;
 
+    const columnName = name || accessor;
+
+    if (columnName === "select" || columnName === "Select") {
       return (
         <VuiBox
-          key={name}
+          key={columnName}
           component="th"
-          textAlign={align}
-          fontSize="small"
-          fontWeight="bold"
-          color="text"
-          opacity={0.7}
-          pl={pl}
-          pr={pr}
-          sx={{ borderBottom: '1px solid #444', padding: '8px' }}
+          width={width || "60px"}
+          pt={2}
+          pb={2}
+          pl={3}
+          pr={3}
+          textAlign="center"
+          sx={{ borderBottom: "1px solid #56577A" }}
         >
-          {name.toUpperCase()}
+          {renderHeader ? (
+            renderHeader(columns[key], () => {
+              if (selectedRows.length === rows.length) {
+                onBulkSelect([]);
+              } else {
+                onBulkSelect(rows.map(row => row.id));
+              }
+            }, selectedRows.length === rows.length)
+          ) : (
+            <Checkbox
+              checked={selectedRows.length > 0 && selectedRows.length === rows.length}
+              indeterminate={selectedRows.length > 0 && selectedRows.length < rows.length}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  onBulkSelect(rows.map(row => row.id));
+                } else {
+                  onBulkSelect([]);
+                }
+              }}
+              sx={{
+                color: 'white',
+                '&.Mui-checked': { color: 'info.main' },
+                '&.MuiCheckbox-indeterminate': { color: 'info.main' },
+                '& .MuiSvgIcon-root': { fontSize: 20 }
+              }}
+            />
+          )}
         </VuiBox>
       );
-    })
-  ];
+    }
+
+    return (
+      <VuiBox
+        key={columnName}
+        component="th"
+        width={width}
+        pt={2}
+        pb={2}
+        pl={3}
+        pr={3}
+        textAlign={align}
+        fontSize="12.84px"
+        fontWeight="medium"
+        color="text"
+        opacity={0.7}
+        borderBottom="1px solid #56577A"
+      >
+        {label || name}
+      </VuiBox>
+    );
+  });
 
   const renderRows = rows.map((row, key) => {
     const rowKey = `row-${key}`;
     const isSelected = selectedRows.includes(row.id);
 
-    // Add checkbox cell to each row
-    const checkboxCell = (
-      <VuiBox key={`checkbox-${row.id}`} component="td" textAlign="center" sx={{ padding: '8px' }}>
-        <Checkbox
-          size="medium"
-          sx={{
-            color: 'white',
-            '&.Mui-checked': { color: 'info.main' },
-            '& .MuiSvgIcon-root': { fontSize: '24px' },
-            padding: 0
-          }}
-          checked={isSelected}
-          onChange={() => {
-            if (isSelected) {
-              onBulkSelect(selectedRows.filter(id => id !== row.id));
-            } else {
-              onBulkSelect([...selectedRows, row.id]);
-            }
-          }}
-        />
-      </VuiBox>
-    );
-
-    const tableRow = columns.map(({ accessor, align }) => {
+    const tableRow = columns.map(({ name, align, accessor, renderCell, width }) => {
+      const columnName = name || accessor;
       let template;
 
-      if (accessor === "edit") {
+      if (columnName === "select" || columnName === "Select") {
         template = (
-          <VuiBox key={uuidv4()} component="td" textAlign={align} sx={{ padding: '8px' }}>
-            <IconButton aria-label="edit" onClick={() => onEdit(row)}>
-              <EditIcon color="warning" />
-            </IconButton>
+          <VuiBox
+            key={columnName}
+            component="td"
+            width={width}
+            pt={2}
+            pb={2}
+            pl={3}
+            pr={3}
+            textAlign="center"
+            sx={{ border: "none" }}
+          >
+            {renderCell ? (
+              renderCell(row, () => onBulkSelect(isSelected ? selectedRows.filter(id => id !== row.id) : [...selectedRows, row.id]))
+            ) : (
+              <Checkbox
+                checked={isSelected}
+                onChange={() => {
+                  if (isSelected) {
+                    onBulkSelect(selectedRows.filter(id => id !== row.id));
+                  } else {
+                    onBulkSelect([...selectedRows, row.id]);
+                  }
+                }}
+                sx={{
+                  color: 'white',
+                  '&.Mui-checked': { color: 'info.main' },
+                  '& .MuiSvgIcon-root': { fontSize: 20 }
+                }}
+              />
+            )}
           </VuiBox>
         );
-      } else if (accessor === "delete") {
+      } else if (columnName === "edit" || columnName === "Edit") {
         template = (
-          <VuiBox key={uuidv4()} component="td" textAlign={align} sx={{ padding: '8px' }}>
-            <IconButton aria-label="delete" onClick={() => onDelete(row.id)}>
-              <DeleteIcon color="error" />
+          <VuiBox
+            key={columnName}
+            component="td"
+            pt={2}
+            pb={2}
+            pl={3}
+            pr={3}
+            textAlign={align}
+            sx={{ border: "none" }}
+          >
+            {renderCell ? (
+              renderCell(row, null, onEdit)
+            ) : (
+              <IconButton onClick={() => onEdit?.(row)} sx={{ color: "warning.main" }}>
+                <EditIcon />
+              </IconButton>
+            )}
+          </VuiBox>
+        );
+      } else if (columnName === "delete" || columnName === "Delete") {
+        template = (
+          <VuiBox
+            key={columnName}
+            component="td"
+            pt={2}
+            pb={2}
+            pl={3}
+            pr={3}
+            textAlign={align}
+            sx={{ border: "none" }}
+          >
+            <IconButton onClick={() => onDelete?.(row.id)} sx={{ color: "error.main" }}>
+              <DeleteIcon />
             </IconButton>
           </VuiBox>
         );
       } else {
         template = (
-          <VuiBox key={uuidv4()} component="td" textAlign={align} sx={{ padding: '8px' }}>
-            <VuiTypography variant="button" fontWeight="regular" color="text">
-              {row[accessor]}
-            </VuiTypography>
+          <VuiBox
+            key={columnName}
+            component="td"
+            pt={2}
+            pb={2}
+            pl={3}
+            pr={3}
+            textAlign={align}
+            fontSize="13px"
+            fontWeight="medium"
+            color="text"
+            sx={{ border: "none" }}
+          >
+            {row[accessor || name]}
           </VuiBox>
         );
       }
@@ -142,30 +198,28 @@ function Table({ columns, rows, onEdit, onDelete, onBulkSelect, selectedRows = [
       return template;
     });
 
-    return <TableRow
-      key={rowKey}
-      sx={{
-        backgroundColor: isSelected ? 'rgba(0, 117, 255, 0.1)' : 'transparent',
-        '&:hover': { backgroundColor: 'rgba(0, 117, 255, 0.05)' }
-      }}
-    >
-      {checkboxCell}
-      {tableRow}
-    </TableRow>;
+    return (
+      <TableRow 
+        key={rowKey}
+        sx={{
+          backgroundColor: isSelected ? 'rgba(0, 117, 255, 0.1)' : 'transparent',
+          '&:hover': { backgroundColor: 'rgba(0, 117, 255, 0.05)' }
+        }}
+      >
+        {tableRow}
+      </TableRow>
+    );
   });
 
-  return useMemo(
-    () => (
-      <TableContainer sx={{ width: '100%' }}>
-        <MuiTable sx={{ width: '100%', tableLayout: 'fixed' }}>
-          <thead>
-            <TableRow>{renderColumns}</TableRow>
-          </thead>
-          <TableBody>{renderRows}</TableBody>
-        </MuiTable>
-      </TableContainer>
-    ),
-    [columns, rows, selectedRows, onBulkSelect]
+  return (
+    <TableContainer>
+      <MuiTable>
+        <VuiBox component="thead">
+          <TableRow>{renderColumns}</TableRow>
+        </VuiBox>
+        <TableBody>{renderRows}</TableBody>
+      </MuiTable>
+    </TableContainer>
   );
 }
 
@@ -175,7 +229,7 @@ Table.defaultProps = {
   onEdit: () => {},
   onDelete: () => {},
   onBulkSelect: () => {},
-  selectedRows: [],
+  selectedRows: []
 };
 
 Table.propTypes = {
@@ -184,7 +238,7 @@ Table.propTypes = {
   onEdit: PropTypes.func,
   onDelete: PropTypes.func,
   onBulkSelect: PropTypes.func,
-  selectedRows: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number])),
+  selectedRows: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.number]))
 };
 
 export default Table;

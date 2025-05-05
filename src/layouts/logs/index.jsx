@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Card, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress } from "@mui/material";
+import { Card, Grid, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress } from "@mui/material";
 import VuiButton from "@/components/VuiButton";
 import VuiBox from "@/components/VuiBox";
 import VuiTypography from "@/components/VuiTypography";
@@ -7,6 +7,7 @@ import LineChart from "@/examples/Charts/LineCharts/LineChart";
 import colors from "@/assets/theme/base/colors";
 import { supabase } from "@/config/supabaseClient";
 import { BsCheckCircleFill } from "react-icons/bs";
+import Table from "@/examples/Tables/Table";
 
 // Layout components
 import DashboardLayout from "@/examples/LayoutContainers/DashboardLayout";
@@ -20,51 +21,131 @@ function LogsMonitoring() {
     data: []
   });
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [loadingMoreLogs, setLoadingMoreLogs] = useState(false);
   const [error, setError] = useState(null);
+  const [page, setPage] = useState(0);
+  const [logsPage, setLogsPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [hasMoreLogs, setHasMoreLogs] = useState(true);
 
   useEffect(() => {
     fetchSchedulerLogs();
     fetchTwilioCalls();
   }, []);
 
-  const fetchSchedulerLogs = async () => {
+  const fetchSchedulerLogs = async (isLoadingMore = false) => {
     try {
+      if (!isLoadingMore) {
+        setLoading(true);
+        setLogsPage(0);
+      } else {
+        setLoadingMoreLogs(true);
+      }
+
       const { data, error } = await supabase
         .from('scheduler_logs')
         .select('*')
         .order('created_at', { ascending: false })
-        .limit(100);
+        .range(logsPage * 50, (logsPage + 1) * 50 - 1);
 
       if (error) throw error;
-      setSchedulerLogs(data || []);
+
+      const sortedData = data || [];
+      if (isLoadingMore) {
+        setSchedulerLogs(prev => [...prev, ...sortedData]);
+      } else {
+        setSchedulerLogs(sortedData);
+      }
+
+      setHasMoreLogs(data?.length === 50);
     } catch (err) {
       console.error('Error fetching scheduler logs:', err);
       setError('Failed to fetch scheduler logs');
+    } finally {
+      if (isLoadingMore) {
+        setLoadingMoreLogs(false);
+      } else {
+        setLoading(false);
+      }
     }
   };
 
-  const fetchTwilioCalls = async () => {
+  const handleLogsScroll = async (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+    if (scrollHeight - scrollTop <= clientHeight * 1.5 && hasMoreLogs && !loadingMoreLogs) {
+      setLogsPage(prev => prev + 1);
+      await fetchSchedulerLogs(true);
+    }
+  };
+
+  const fetchTwilioCalls = async (isLoadingMore = false) => {
     try {
+      if (!isLoadingMore) {
+        setLoading(true);
+        setPage(0);
+      } else {
+        setLoadingMore(true);
+      }
+
       const { data, error } = await supabase
         .from('twilio_calls')
         .select('*')
         .order('start_time', { ascending: false })
-        .limit(100);
+        .range(page * 50, (page + 1) * 50 - 1);
 
       if (error) throw error;
-      setTwilioCalls(data || []);
-      if (data) processCallMetrics(data);
+
+      const sortedData = data || [];
+      if (isLoadingMore) {
+        setTwilioCalls(prev => [...prev, ...sortedData]);
+      } else {
+        setTwilioCalls(sortedData);
+        if (sortedData.length > 0) processCallMetrics(sortedData);
+      }
+
+      setHasMore(data?.length === 50);
     } catch (err) {
       console.error('Error fetching Twilio calls:', err);
       setError('Failed to fetch call records');
+    } finally {
+      if (isLoadingMore) {
+        setLoadingMore(false);
+      } else {
+        setLoading(false);
+      }
+    }
+  };
+
+  const handleScroll = async (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+    if (scrollHeight - scrollTop <= clientHeight * 1.5 && hasMore && !loadingMore) {
+      setPage(prev => prev + 1);
+      await fetchTwilioCalls(true);
+    }
+  };
+
+  const scrollToTop = (element) => {
+    if (element) {
+      element.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   const refreshData = async () => {
     setLoading(true);
     setError(null);
+    setPage(0);
+    setLogsPage(0);
+    setHasMore(true);
+    setHasMoreLogs(true);
     await Promise.all([fetchSchedulerLogs(), fetchTwilioCalls()]);
     setLoading(false);
+    
+    // Scroll both tables to top after refresh
+    const callsTable = document.querySelector('#calls-table');
+    const logsTable = document.querySelector('#logs-table');
+    scrollToTop(callsTable);
+    scrollToTop(logsTable);
   };
 
   useEffect(() => {
@@ -133,12 +214,119 @@ function LogsMonitoring() {
     <DashboardLayout>
       <DashboardNavbar />
       <VuiBox py={3} px={3}>
-      <Grid container spacing={3}>
+      <Grid container spacing={3} sx={{ display: 'flex', alignItems: 'stretch' }}>
+        {/* Recent Calls Table */}
+        <Grid item xs={12} md={6} sx={{ display: 'flex' }}>
+          <Card sx={{
+            height: "100%",
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+          }}>
+            <VuiBox display="flex" justifyContent="space-between" alignItems="center" mb="22px" p={3}>
+              <VuiBox>
+                <VuiTypography color="white" variant="lg" mb="6px" gutterBottom>
+                  Recent Calls
+                </VuiTypography>
+                <VuiBox display="flex" alignItems="center" lineHeight={0}>
+                  <BsCheckCircleFill color="green" size="15px" />
+                  <VuiTypography variant="button" fontWeight="regular" color="text" ml="5px">
+                    &nbsp;<strong>{twilioCalls.length}</strong> Total Calls
+                  </VuiTypography>
+                </VuiBox>
+              </VuiBox>
+           </VuiBox>
+           <VuiBox p={3} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+             {loading ? (
+                <VuiBox display="flex" justifyContent="center" p={3}>
+                  <CircularProgress />
+                </VuiBox>
+              ) : twilioCalls.length === 0 ? (
+                <VuiTypography color="text" textAlign="center" p={3}>
+                  No call records found
+                </VuiTypography>
+              ) : (
+              <VuiBox
+                id="calls-table"
+                sx={{
+                  maxHeight: "400px",
+                  overflowY: "auto",
+                  overflowX: "hidden",
+                  scrollBehavior: "smooth"
+                }}
+                onScroll={handleScroll}
+              >
+                <Table
+                  columns={[
+                    { name: "Time", accessor: "time", align: "left" },
+                    { name: "From", accessor: "from", align: "left" },
+                    { name: "To", accessor: "to", align: "left" },
+                    { name: "Status", accessor: "status", align: "left" },
+                    { name: "Duration", accessor: "duration", align: "left" }
+                  ]}
+                  rows={twilioCalls.map(call => ({
+                    id: call.sid,
+                    time: new Date(call.start_time).toLocaleString(),
+                    from: call.from_number,
+                    to: call.to_number,
+                    status: call.status,
+                    duration: `${call.duration}s`
+                  }))}
+                />
+                {loadingMore && (
+                  <VuiBox display="flex" justifyContent="center" p={2}>
+                    <CircularProgress size={20} />
+                  </VuiBox>
+                )}
+              </VuiBox>
+             )}
+           </VuiBox>
+          </Card>
+        </Grid>
+
+        {/* Call Volume Chart */}
+        <Grid item xs={12} md={6} >
+          <Card sx={{
+            height: "100%",
+            width: "850px",
+            display: "flex",
+            flexDirection: "column",
+          }}>
+            <VuiBox display="flex" justifyContent="space-between" alignItems="center" mb="22px" p={3}>
+              <VuiBox>
+                <VuiTypography color="white" variant="lg" mb="6px" gutterBottom>
+                  Call Volume Trends
+                </VuiTypography>
+                <VuiBox display="flex" alignItems="center" lineHeight={0}>
+                  <BsCheckCircleFill color="green" size="15px" />
+                  <VuiTypography variant="button" fontWeight="regular" color="text" ml="5px">
+                    &nbsp;Last 7 Days
+                  </VuiTypography>
+                </VuiBox>
+              </VuiBox>
+            </VuiBox>
+            <VuiBox p={3} sx={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <LineChart
+                title="Daily Call Volume"
+                description="Number of calls per day over the last 7 days"
+                chart={callVolumeChart}
+                height="300px"
+              />
+              {loadingMoreLogs && (
+                <VuiBox display="flex" justifyContent="center" p={2}>
+                  <CircularProgress size={20} />
+                </VuiBox>
+              )}
+            </VuiBox>
+          </Card>
+        </Grid>
+
         {/* Scheduler Logs Table */}
-        <Grid item xs={12} md={6}>
+        <Grid item sx={ {width: "100%"} } md={12} >
           <Card sx={{
             height: "100%",
             display: "flex",
+            width: "100%",
             flexDirection: "column",
           }}>
             <VuiBox display="flex" justifyContent="space-between" alignItems="center" mb="22px" p={3}>
@@ -164,9 +352,9 @@ function LogsMonitoring() {
                   Refresh
                 </VuiButton>
               </VuiBox>
-           </VuiBox>
-           <VuiBox p={3}>
-             {error && (
+            </VuiBox>
+            <VuiBox p={3}>
+              {error && (
                 <VuiTypography color="error" mb={2}>
                   {error}
                 </VuiTypography>
@@ -180,259 +368,31 @@ function LogsMonitoring() {
                   No scheduler logs found
                 </VuiTypography>
               ) : (
-              <TableContainer component={Paper} sx={{
-                backgroundColor: "transparent",
-                maxHeight: "400px",
-                overflow: "auto",
-                "&::-webkit-scrollbar": {
-                  width: "8px",
-                  height: "8px",
-                },
-                "&::-webkit-scrollbar-track": {
-                  background: "rgba(0, 0, 0, 0.1)",
-                  borderRadius: "10px",
-                },
-                "&::-webkit-scrollbar-thumb": {
-                  background: "rgba(255, 255, 255, 0.2)",
-                  borderRadius: "10px",
-                  "&:hover": {
-                    background: "rgba(255, 255, 255, 0.3)",
-                  },
-                },
-                "& .MuiTableCell-root": {
-                  borderColor: "rgba(255, 255, 255, 0.1)",
-                },
-                "& .MuiPaper-root": {
-                  backgroundColor: "transparent",
-                }
-              }}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell sx={{
-                        color: "white",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        borderBottom: "none",
-                        backgroundColor: "transparent",
-                        padding: "12px 20px"
-                      }}>Time</TableCell>
-                      <TableCell sx={{
-                        color: "white",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        borderBottom: "none",
-                        backgroundColor: "transparent",
-                        padding: "12px 20px"
-                      }}>Event</TableCell>
-                      <TableCell sx={{
-                        color: "white",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        borderBottom: "none",
-                        backgroundColor: "transparent",
-                        padding: "12px 20px"
-                      }}>Details</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {schedulerLogs.map((log) => (
-                      <TableRow key={log.id}>
-                        <TableCell sx={{
-                          color: "rgba(255, 255, 255, 0.7)",
-                          borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-                          padding: "12px 20px"
-                        }}>
-                          {new Date(log.created_at).toLocaleString()}
-                        </TableCell>
-                        <TableCell sx={{
-                          color: "rgba(255, 255, 255, 0.7)",
-                          borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-                          padding: "12px 20px"
-                        }}>{log.event}</TableCell>
-                        <TableCell sx={{
-                          color: "rgba(255, 255, 255, 0.7)",
-                          borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-                          padding: "12px 20px"
-                        }}>{log.details}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-             )}
-           </VuiBox>
-          </Card>
-        </Grid>
-
-        {/* Twilio Calls Table */}
-        <Grid item xs={12} md={6}>
-          <Card sx={{
-            height: "100%",
-            display: "flex",
-            flexDirection: "column",
-          }}>
-            <VuiBox display="flex" justifyContent="space-between" alignItems="center" mb="22px" p={3}>
-              <VuiBox>
-                <VuiTypography color="white" variant="lg" mb="6px" gutterBottom>
-                  Recent Calls
-                </VuiTypography>
-                <VuiBox display="flex" alignItems="center" lineHeight={0}>
-                  <BsCheckCircleFill color="green" size="15px" />
-                  <VuiTypography variant="button" fontWeight="regular" color="text" ml="5px">
-                    &nbsp;<strong>{twilioCalls.length}</strong> Total Calls
-                  </VuiTypography>
-                </VuiBox>
+              <VuiBox
+                id="logs-table"
+                sx={{
+                  maxHeight: "400px",
+                  overflowY: "auto",
+                  overflowX: "hidden",
+                  scrollBehavior: "smooth"
+                }}
+                onScroll={handleLogsScroll}
+              >
+                <Table
+                  columns={[
+                    { name: "Time", accessor: "time", align: "left" },
+                    { name: "Event", accessor: "event", align: "left" },
+                    { name: "Details", accessor: "details", align: "left" }
+                  ]}
+                  rows={schedulerLogs.map(log => ({
+                    id: log.id,
+                    time: new Date(log.created_at).toLocaleString(),
+                    event: log.event,
+                    details: log.details
+                  }))}
+                />
               </VuiBox>
-           </VuiBox>
-           <VuiBox p={3}>
-             {loading ? (
-                <VuiBox display="flex" justifyContent="center" p={3}>
-                  <CircularProgress />
-                </VuiBox>
-              ) : twilioCalls.length === 0 ? (
-                <VuiTypography color="text" textAlign="center" p={3}>
-                  No call records found
-                </VuiTypography>
-              ) : (
-              <TableContainer component={Paper} sx={{
-                backgroundColor: "transparent",
-                maxHeight: "400px",
-                overflow: "auto",
-                "&::-webkit-scrollbar": {
-                  width: "8px",
-                  height: "8px",
-                },
-                "&::-webkit-scrollbar-track": {
-                  background: "rgba(0, 0, 0, 0.1)",
-                  borderRadius: "10px",
-                },
-                "&::-webkit-scrollbar-thumb": {
-                  background: "rgba(255, 255, 255, 0.2)",
-                  borderRadius: "10px",
-                  "&:hover": {
-                    background: "rgba(255, 255, 255, 0.3)",
-                  },
-                },
-                "& .MuiTableCell-root": {
-                  borderColor: "rgba(255, 255, 255, 0.1)",
-                },
-                "& .MuiPaper-root": {
-                  backgroundColor: "transparent",
-                }
-              }}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell sx={{
-                        color: "white",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        borderBottom: "none",
-                        backgroundColor: "transparent",
-                        padding: "12px 20px"
-                      }}>Time</TableCell>
-                      <TableCell sx={{
-                        color: "white",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        borderBottom: "none",
-                        backgroundColor: "transparent",
-                        padding: "12px 20px"
-                      }}>From</TableCell>
-                      <TableCell sx={{
-                        color: "white",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        borderBottom: "none",
-                        backgroundColor: "transparent",
-                        padding: "12px 20px"
-                      }}>To</TableCell>
-                      <TableCell sx={{
-                        color: "white",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        borderBottom: "none",
-                        backgroundColor: "transparent",
-                        padding: "12px 20px"
-                      }}>Status</TableCell>
-                      <TableCell sx={{
-                        color: "white",
-                        fontSize: "14px",
-                        fontWeight: "500",
-                        borderBottom: "none",
-                        backgroundColor: "transparent",
-                        padding: "12px 20px"
-                      }}>Duration</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {twilioCalls.map((call) => (
-                      <TableRow key={call.sid}>
-                        <TableCell sx={{
-                          color: "rgba(255, 255, 255, 0.7)",
-                          borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-                          padding: "12px 20px"
-                        }}>
-                          {new Date(call.start_time).toLocaleString()}
-                        </TableCell>
-                        <TableCell sx={{
-                          color: "rgba(255, 255, 255, 0.7)",
-                          borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-                          padding: "12px 20px"
-                        }}>{call.from_number}</TableCell>
-                        <TableCell sx={{
-                          color: "rgba(255, 255, 255, 0.7)",
-                          borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-                          padding: "12px 20px"
-                        }}>{call.to_number}</TableCell>
-                        <TableCell sx={{
-                          color: "rgba(255, 255, 255, 0.7)",
-                          borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-                          padding: "12px 20px"
-                        }}>{call.status}</TableCell>
-                        <TableCell sx={{
-                          color: "rgba(255, 255, 255, 0.7)",
-                          borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
-                          padding: "12px 20px"
-                        }}>{call.duration}s</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-             )}
-           </VuiBox>
-          </Card>
-        </Grid>
-
-        {/* Call Volume Chart */}
-        <Grid item xs={12}>
-          <Card sx={{
-            height: "100%",
-            display: "flex",
-            flexDirection: "column",
-          }}>
-            <VuiBox display="flex" justifyContent="space-between" alignItems="center" mb="22px" p={3}>
-              <VuiBox>
-                <VuiTypography color="white" variant="lg" mb="6px" gutterBottom>
-                  Call Volume Trends
-                </VuiTypography>
-                <VuiBox display="flex" alignItems="center" lineHeight={0}>
-                  <BsCheckCircleFill color="green" size="15px" />
-                  <VuiTypography variant="button" fontWeight="regular" color="text" ml="5px">
-                    &nbsp;Last 7 Days
-                  </VuiTypography>
-                </VuiBox>
-              </VuiBox>
-            </VuiBox>
-            <VuiBox p={3}>
-              <LineChart
-                title="Daily Call Volume"
-                description="Number of calls per day over the last 7 days"
-                chart={callVolumeChart}
-                height="300px"
-              />
+              )}
             </VuiBox>
           </Card>
         </Grid>

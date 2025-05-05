@@ -1,20 +1,15 @@
-
 import Card from "@mui/material/Card";
+import { useNotifications } from "../../context/NotificationContext";
+import { useAuth } from "../../context/AuthContext";
 import Grid from "@mui/material/Grid";
 import {
-  TextField,
-  Button,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  IconButton,
-  InputAdornment,
-  Pagination,
   MenuItem,
   Select,
-  FormControl,
-  InputLabel,
+  Button,
   Box
 } from "@mui/material";
 
@@ -31,7 +26,7 @@ import Footer from "../../examples/Footer";
 import Table from "../../examples/Tables/Table";
 
 // Data
-import { columns, useCampaignRows, fetchCampaignsData } from "../../layouts/tables/data/pendingTableData.jsx";
+import { columns, useCampaignRows } from "./data/pendingTableData";
 
 // Icons
 import SearchIcon from '@mui/icons-material/Search';
@@ -39,20 +34,97 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { supabase } from '../../config/supabaseClient';
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 function PendingCapaign() {
-  const [allRows, setAllRows] = useState([]);
-  const [filteredRows, setFilteredRows] = useState([]);
-  const [displayedRows, setDisplayedRows] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { addNotification } = useNotifications();
+  const { user } = useAuth();
+  const {
+    rows,
+    loading,
+    error,
+    selectedRows,
+    setSelectedRows,
+    toggleRowSelection,
+    selectAllCampaigns,
+    selectingAll,
+    refreshData
+  } = useCampaignRows();
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedRows, setSelectedRows] = useState([]);
-  
-  // Pagination
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [totalPages, setTotalPages] = useState(1);
+  const [testCampaignLoading, setTestCampaignLoading] = useState(false);
+
+  // Handle create test campaign
+  const handleCreateTestCampaign = async () => {
+    try {
+      setTestCampaignLoading(true);
+      
+      // Get the last campaign
+      const { data: campaigns, error: fetchError } = await supabase
+        .from('campaigns')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(1);
+
+      if (fetchError) throw fetchError;
+      if (!campaigns || campaigns.length === 0) {
+        throw new Error('No campaigns found to duplicate');
+      }
+
+      const lastCampaign = campaigns[0];
+      
+      // Create new campaign with modified data
+      // Create start_time 30 seconds from now
+      const startTime = new Date(Date.now() + 30000);
+      // Format with microseconds precision and +03:00 timezone
+      const formattedStartTime = startTime.toISOString()
+        .replace('Z', '')  // Remove UTC indicator
+        .split('.')[0]     // Get everything before the decimal
+        + '.' + startTime.getMilliseconds().toString().padEnd(6, '0')  // Add microseconds
+        + '+03:00';        // Add timezone offset
+
+      const newCampaign = {
+        name: `${lastCampaign.name} (Test)`,
+        description: lastCampaign.description,
+        status: 'scheduled',
+        user_id: user.id,
+        start_time: formattedStartTime,
+        script_id: lastCampaign.script_id,
+        call_settings: lastCampaign.call_settings,
+        metrics: lastCampaign.metrics,
+        compliance_settings: lastCampaign.compliance_settings,
+        target_audience: lastCampaign.target_audience,
+        target_lead_ids: lastCampaign.target_lead_ids
+      };
+
+      // Insert the new campaign
+      const { error: insertError } = await supabase
+        .from('campaigns')
+        .insert([newCampaign]);
+
+      if (insertError) throw insertError;
+
+      // Refresh the data
+      refreshData();
+      
+      // Show success notification
+      addNotification({
+        type: 'success',
+        message: `Test campaign created! Will run in 30 seconds.`,
+      });
+      
+    } catch (error) {
+      console.error('Error creating test campaign:', error);
+      addNotification({
+        type: 'error',
+        message: `Failed to create test campaign: ${error.message}`,
+      });
+    } finally {
+      setTestCampaignLoading(false);
+    }
+  };
   
   // Edit dialog
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -63,65 +135,6 @@ function PendingCapaign() {
   // Delete dialog
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteIds, setDeleteIds] = useState([]);
-
-  // Fetch campaigns data
-  useEffect(() => {
-    const fetchData = async () => {
-      const campaigns = await fetchCampaignsData();
-      // Add id to each row for selection tracking
-      const rowsWithIds = campaigns.map(campaign => ({
-        ...campaign,
-        id: campaign.id,
-        name: campaign.name,
-        description: campaign.description || "No description",
-        status: campaign.status,
-        start_time: new Date(campaign.start_time).toLocaleDateString(),
-        compliance_settings: JSON.stringify(campaign.compliance_settings),
-        created_at: new Date(campaign.created_at).toLocaleDateString(),
-        updated_at: new Date(campaign.updated_at).toLocaleDateString(),
-      }));
-      
-      setAllRows(rowsWithIds);
-      setFilteredRows(rowsWithIds);
-      setLoading(false);
-    };
-
-    fetchData();
-  }, []);
-
-  // Update displayed rows when filtered rows or pagination changes
-  useEffect(() => {
-    if (filteredRows.length > 0) {
-      const startIndex = (page - 1) * rowsPerPage;
-      const endIndex = startIndex + rowsPerPage;
-      setDisplayedRows(filteredRows.slice(startIndex, endIndex));
-      setTotalPages(Math.ceil(filteredRows.length / rowsPerPage));
-    } else {
-      setDisplayedRows([]);
-      setTotalPages(1);
-    }
-  }, [filteredRows, page, rowsPerPage]);
-
-  // Handle search
-  useEffect(() => {
-    if (searchQuery.trim() === "") {
-      setFilteredRows(allRows);
-    } else {
-      const lowercaseQuery = searchQuery.toLowerCase();
-      const filtered = allRows.filter(row =>
-        row.name.toLowerCase().includes(lowercaseQuery) ||
-        row.description.toLowerCase().includes(lowercaseQuery) ||
-        row.status.toLowerCase().includes(lowercaseQuery)
-      );
-      setFilteredRows(filtered);
-    }
-    setPage(1); // Reset to first page on search
-  }, [searchQuery, allRows]);
-
-  // Handle bulk selection
-  const handleBulkSelect = (selectedIds) => {
-    setSelectedRows(selectedIds);
-  };
 
   // Handle edit
   const handleEdit = (row) => {
@@ -148,14 +161,8 @@ function PendingCapaign() {
           .eq('id', currentEditItem.id);
 
         if (error) throw error;
-
-        // Update local state
-        const updatedRows = allRows.map(row =>
-          row.id === currentEditItem.id ? { ...row, ...currentEditItem } : row
-        );
-        setAllRows(updatedRows);
-        setFilteredRows(updatedRows);
         
+        refreshData();
         setEditDialogOpen(false);
         setCurrentEditItem(null);
       } catch (error) {
@@ -167,26 +174,15 @@ function PendingCapaign() {
   // Handle save bulk edit
   const handleSaveBulkEdit = async () => {
     try {
-      // Only update fields that are not empty
-      const updateData = {};
-      if (bulkEditData.status) updateData.status = bulkEditData.status;
-      
-      if (Object.keys(updateData).length > 0) {
+      if (bulkEditData.status) {
         const { error } = await supabase
           .from('campaigns')
-          .update(updateData)
+          .update({ status: bulkEditData.status })
           .in('id', selectedRows);
 
         if (error) throw error;
-
-        // Update local state
-        const updatedRows = allRows.map(row =>
-          selectedRows.includes(row.id)
-            ? { ...row, ...updateData, status: updateData.status || row.status }
-            : row
-        );
-        setAllRows(updatedRows);
-        setFilteredRows(updatedRows);
+        
+        refreshData();
       }
       
       setBulkEditDialogOpen(false);
@@ -221,11 +217,7 @@ function PendingCapaign() {
 
       if (error) throw error;
 
-      // Update local state
-      const remainingRows = allRows.filter(row => !deleteIds.includes(row.id));
-      setAllRows(remainingRows);
-      setFilteredRows(remainingRows);
-      
+      refreshData();
       setDeleteDialogOpen(false);
       setDeleteIds([]);
       setSelectedRows([]);
@@ -234,32 +226,38 @@ function PendingCapaign() {
     }
   };
 
-  // Handle page change
-  const handlePageChange = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  // Handle rows per page change
-  const handleRowsPerPageChange = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(1);
-  };
-
   return (
     <DashboardLayout>
       <DashboardNavbar />
-      <VuiBox mb={5} p={3} display="flex" justifyContent="center" alignItems="center" style={{ minHeight: '80vh' }}>
-        <Grid container justifyContent="center">
-          <Grid item xs={12} md={10} lg={10}>
+      <VuiBox py={3}>
+        <Grid container spacing={3} justifyContent="center">
+          <Grid item xs={12} md={10}>
             <Card>
               <VuiBox p={3}>
                 <VuiBox display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                  <VuiTypography variant="lg" color="white">
+                  <VuiTypography variant="lg" color="white" fontSize="18.19px">
                     Pending Campaigns
                   </VuiTypography>
                   
-                  {/* Search Bar */}
-                  <VuiBox width="40%">
+                  <VuiBox display="flex" alignItems="center" gap={2}>
+                    <VuiButton
+                      variant="contained"
+                      color="success"
+                      size="small"
+                      onClick={handleCreateTestCampaign}
+                      disabled={testCampaignLoading}
+                    >
+                      {testCampaignLoading ? 'Creating Test...' : 'Create Test Campaign'}
+                    </VuiButton>
+                    <VuiButton
+                      variant="contained"
+                      color="info"
+                      size="small"
+                      onClick={selectAllCampaigns}
+                      disabled={selectingAll}
+                    >
+                      {selectingAll ? 'Selecting All...' : 'Select All'}
+                    </VuiButton>
                     <VuiInput
                       placeholder="Search campaigns..."
                       value={searchQuery}
@@ -269,7 +267,6 @@ function PendingCapaign() {
                   </VuiBox>
                 </VuiBox>
                 
-                {/* Bulk Actions */}
                 {selectedRows.length > 0 && (
                   <VuiBox display="flex" gap={2} mb={3}>
                     <VuiButton
@@ -296,56 +293,19 @@ function PendingCapaign() {
                     <VuiTypography variant="button" color="white" p={2}>
                       Loading campaigns...
                     </VuiTypography>
+                  ) : error ? (
+                    <VuiTypography variant="button" color="error" p={2}>
+                      {error}
+                    </VuiTypography>
                   ) : (
-                    <>
-                      <Table
-                        columns={columns}
-                        rows={displayedRows}
-                        onEdit={handleEdit}
-                        onDelete={handleDelete}
-                        onBulkSelect={handleBulkSelect}
-                        selectedRows={selectedRows}
-                      />
-                      
-                      {/* Pagination */}
-                      <VuiBox display="flex" justifyContent="space-between" alignItems="center" mt={3}>
-                        <Box display="flex" alignItems="center">
-                          <VuiTypography variant="button" color="text" mr={1}>
-                            Rows per page:
-                          </VuiTypography>
-                          <Select
-                            value={rowsPerPage}
-                            onChange={handleRowsPerPageChange}
-                            size="small"
-                            sx={{
-                              color: 'white',
-                              '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.3)' },
-                              '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.5)' },
-                              '.MuiSvgIcon-root': { color: 'white' }
-                            }}
-                          >
-                            <MenuItem value={5}>5</MenuItem>
-                            <MenuItem value={10}>10</MenuItem>
-                            <MenuItem value={25}>25</MenuItem>
-                          </Select>
-                        </Box>
-                        
-                        <Pagination
-                          count={totalPages}
-                          page={page}
-                          onChange={handlePageChange}
-                          color="primary"
-                          sx={{
-                            '.MuiPaginationItem-root': {
-                              color: 'white',
-                            },
-                            '.Mui-selected': {
-                              backgroundColor: 'primary.main',
-                            }
-                          }}
-                        />
-                      </VuiBox>
-                    </>
+                    <Table
+                      columns={columns}
+                      rows={rows}
+                      onEdit={handleEdit}
+                      onDelete={handleDelete}
+                      onBulkSelect={toggleRowSelection}
+                      selectedRows={selectedRows}
+                    />
                   )}
                 </VuiBox>
               </VuiBox>

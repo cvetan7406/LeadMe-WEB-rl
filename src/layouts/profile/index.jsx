@@ -25,17 +25,10 @@ import DashboardLayout from "../../examples/LayoutContainers/DashboardLayout";
 import Header from "../../layouts/profile/components/Header";
 import PlatformSettings from "../../layouts/profile/components/PlatformSettings";
 import Welcome from "./components/Welcome/index";
-import CarInformations from "./components/CarInformations";
+import CallUsageStats from "./components/CallUsageStats";
 
 function Overview() {
   const [user, setUser] = useState(null);
-  const [stats, setStats] = useState({
-    totalUsers: 0,
-    activeUsers: 0,
-    ssoUsers: 0,
-    emailConfirmed: 0,
-    newUsersThisWeek: 0
-  });
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -43,51 +36,7 @@ function Overview() {
       setUser(user);
     };
 
-    const fetchStats = async () => {
-      const now = new Date();
-      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-
-      // Get total users count
-      const { count: totalUsers } = await supabase
-        .from('users')
-        .select('*', { count: 'exact' });
-
-      // Get active users (not deleted or banned)
-      const { count: activeUsers } = await supabase
-        .from('users')
-        .select('*', { count: 'exact' })
-        .is('deleted_at', null)
-        .is('banned_until', null);
-
-      // Get SSO users count
-      const { count: ssoUsers } = await supabase
-        .from('users')
-        .select('*', { count: 'exact' })
-        .eq('is_sso_user', true);
-
-      // Get email confirmed users
-      const { count: emailConfirmed } = await supabase
-        .from('users')
-        .select('*', { count: 'exact' })
-        .not('email_confirmed_at', 'is', null);
-
-      // Get new users this week
-      const { count: newUsersThisWeek } = await supabase
-        .from('users')
-        .select('*', { count: 'exact' })
-        .gte('created_at', weekAgo.toISOString());
-
-      setStats({
-        totalUsers,
-        activeUsers,
-        ssoUsers,
-        emailConfirmed,
-        newUsersThisWeek
-      });
-    };
-
     fetchUserData();
-    fetchStats();
   }, []);
 
   return (
@@ -117,7 +66,7 @@ function Overview() {
       <VuiBox mb={3}>
         <Grid container>
           <Grid size={{ xs: 12 }}>
-            <CarInformations />
+            <CallUsageStats />
           </Grid>
         </Grid>
       </VuiBox>
